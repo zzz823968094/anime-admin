@@ -15,17 +15,17 @@ COPY . .
 # 构建生产版本
 RUN npm run build
 
-# 生产阶段 - 使用node静态服务，不需要nginx
-FROM node:18-alpine
+# 生产阶段
+FROM nginx:alpine
 
-# 安装serve用于静态文件服务
-RUN npm install -g serve
+# 复制自定义nginx配置
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 复制构建产物
-COPY --from=builder /app/dist /app/dist
+# 复制构建产物到nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # 暴露端口
 EXPOSE 3001
 
-# 启动静态文件服务
-CMD ["serve", "-s", "dist", "-l", "3001"]
+# 启动nginx
+CMD ["nginx", "-g", "daemon off;"]
