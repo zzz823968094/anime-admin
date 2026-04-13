@@ -18,9 +18,6 @@ RUN npm run build
 # 生产阶段
 FROM nginx:alpine
 
-# 复制nginx配置
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
 # 复制构建产物到nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
