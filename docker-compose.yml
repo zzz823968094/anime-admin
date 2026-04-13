@@ -1,0 +1,15 @@
+services:
+  anime-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: anime-admin
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    networks:
+      - anime-network
+
+networks:
+  anime-network:
+    driver: bridge
