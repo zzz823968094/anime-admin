@@ -116,9 +116,17 @@
         >
           上一页
         </button>
-        <span class="pg-info">
-          第 {{ pagination.current }} / {{ totalPages }} 页，共 {{ pagination.total }} 条
-        </span>
+        <template v-for="item in displayPages" :key="item">
+          <span v-if="item === '...'" class="pg-ellipsis">...</span>
+          <button
+            v-else
+            class="pg-btn"
+            :class="{ on: pagination.current === item }"
+            @click="handlePageChange(item)"
+          >
+            {{ item }}
+          </button>
+        </template>
         <button
           class="pg-btn"
           :disabled="pagination.current >= totalPages"
@@ -157,6 +165,48 @@ const pagination = reactive({
 })
 
 const totalPages = computed(() => Math.ceil(pagination.total / pagination.pageSize))
+
+// 计算显示的页码（带省略号）
+const displayPages = computed(() => {
+  const pages = []
+  const total = totalPages.value
+  const current = pagination.current
+  
+  if (total <= 7) {
+    // 总页数小于等于7，显示所有页码
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    // 总页数大于7，使用省略号
+    if (current <= 4) {
+      // 当前页在前面
+      for (let i = 1; i <= 5; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 3) {
+      // 当前页在后面
+      pages.push(1)
+      pages.push('...')
+      for (let i = total - 4; i <= total; i++) {
+        pages.push(i)
+      }
+    } else {
+      // 当前页在中间
+      pages.push(1)
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    }
+  }
+  
+  return pages
+})
 
 const searchForm = reactive({
   username: '',

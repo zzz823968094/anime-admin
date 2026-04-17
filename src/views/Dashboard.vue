@@ -99,14 +99,12 @@
           <tr v-for="anime in recentAnime" :key="anime.id">
             <td style="color:var(--sub)">{{ anime.id }}</td>
             <td>
-              <a :href="'/detail.html?id=' + anime.id" target="_blank" class="anime-link">
-                {{ anime.title }}
-              </a>
+                {{ anime.vodName }}
             </td>
-            <td>{{ TYPE_MAP[anime.type] || anime.type || '—' }}</td>
-            <td>第 {{ anime.currentEpisode }} 集</td>
-            <td><span :class="['badge', STATUS_MAP[anime.status]?.[1] || 'b-gray']">{{ STATUS_MAP[anime.status]?.[0] || '未知' }}</span></td>
-            <td style="color:var(--sub)">{{ (anime.createdAt || '').slice(0, 10) }}</td>
+            <td>{{ TYPE_MAP[anime.typeId] || anime.typeId || '—' }}</td>
+            <td>第 {{ anime.vodTotal }} 集</td>
+            <td><span :class="['badge', STATUS_MAP[anime.vodIsend]?.[1] || 'b-gray']">{{ STATUS_MAP[anime.vodIsend]?.[0] || '未知' }}</span></td>
+            <td style="color:var(--sub)">{{ (anime.createAt || '').slice(0, 10) }}</td>
           </tr>
         </tbody>
       </table>
@@ -116,10 +114,13 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import {getAnimeStats, getVisitStats, getUserCount, getAnimeList, getVideoCount} from '@/utils/api'
 
+const router = useRouter()
+
 const TYPE_MAP = { '25': '🇯🇵 日本', '26': '🌎 欧美', '24': '🇨🇳 中国' }
-const STATUS_MAP = { 0: ['已下线', 'b-red'], 1: ['连载中', 'b-green'], 2: ['已完结', 'b-blue'] }
+const STATUS_MAP = { 0: ['连载中', 'b-green'], 1: ['已完结', 'b-blue'], 2: ['已下线', 'b-red']}
 
 const stats = reactive({
   totalAnime: '—',
@@ -281,6 +282,7 @@ onMounted(() => {
 .anime-link {
   color: var(--accent2);
   text-decoration: none;
+  cursor: pointer;
 }
 
 .anime-link:hover {

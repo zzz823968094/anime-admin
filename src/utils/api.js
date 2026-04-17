@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const API_BASE = 'https://lsj.animeparadise.vip'
-// const API_BASE = 'http://localhost:8080'
+// const API_BASE = 'https://lsj.animeparadise.vip'
+const API_BASE = 'http://localhost:8080'
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -80,6 +80,11 @@ export const getAnimeList = (params) => {
   return get('/api/anime/list', params)
 }
 
+
+export const animeOff = (id) => {
+  return del(`/api/anime/${id}`)
+}
+
 // 播放统计API
 export const getVisitStats = () => {
   return get('/api/anime/visit/stats')
@@ -90,21 +95,12 @@ export const getSearchStats = (params = {}) => {
   return get('/api/anime/search/stats', { limit: 20, days: 7, ...params })
 }
 
-// 爬虫相关API
-export const crawlApi = (action) => {
-  return post('/api/crawler/' + action)
+export const crawlNow = (data) => {
+  return post('/api/crawler/crawl-now', data)
 }
 
-export const getFailedCounts = () => {
-  return get('/api/crawler/failed')
-}
-
-export const retryFailed = (type) => {
-  return post(`/api/crawler/retry/${type}`)
-}
-
-export const getDbStats = () => {
-  return get('/api/crawler/stats')
+export const crawlerAllSync = (type) => {
+  return post(`/api/crawler/incremental/${type}`)
 }
 
 // Top100 API
