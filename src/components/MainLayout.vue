@@ -30,13 +30,6 @@
         </button>
         <button
           class="sb-item"
-          :class="{ on: currentRoute === 'top100' }"
-          @click="navigate('top100')"
-        >
-          <span class="ic">🏆</span>播放排行
-        </button>
-        <button
-          class="sb-item"
           :class="{ on: currentRoute === 'search' }"
           @click="navigate('search')"
         >

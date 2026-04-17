@@ -21,13 +21,13 @@
         </div>
         <div class="toolbar-right">
           <button class="btn btn-success" @click="quickSync(25, 44)">
-            日本动漫同步
+            日本动漫(24H内数据同步)
           </button>
           <button class="btn btn-warning" @click="quickSync(26, 9)">
-            欧美动漫同步
+            欧美动漫(24H内数据同步)
           </button>
           <button class="btn btn-primary" @click="quickSync(24, 47)">
-            中国动漫同步
+            中国动漫(24H内数据同步)
           </button>
         </div>
       </div>
@@ -50,7 +50,7 @@
             <th>任务名称</th>
             <th>任务类型</th>
             <th>Cron 表达式</th>
-            <th>页数</th>
+            <th>小时</th>
             <th>状态</th>
             <th>启用</th>
             <th>上次执行</th>
@@ -68,7 +68,8 @@
               </span>
             </td>
             <td><code>{{ task.cronExpression }}</code></td>
-            <td>{{ task.pages }}</td>
+
+            <td><code>{{ task.hour }}H内数据</code></td>
             <td>
               <span :class="['status-badge', `status-${task.status?.name?.toLowerCase()}`]">
                 {{ getStatusName(task.status) }}
@@ -131,7 +132,7 @@
               v-model="formData.taskName"
               type="text"
               required
-              placeholder="例如:日本动漫每日同步"
+              placeholder="例如:中国动漫每日同步"
             />
           </div>
           <div class="form-group">
@@ -288,14 +289,10 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="pages">爬取页数 *</label>
-            <input
-              id="pages"
-              v-model.number="formData.pages"
-              type="number"
-              required
-              min="1"
-            />
+            <label for="taskType">执行几小时内的数据 *</label>
+            <select id="taskType" v-model="formData.hour" required>
+              <option v-for="h in 24" :value="h">{{h}}小时内</option>
+            </select>
           </div>
           <div class="form-group">
             <label class="checkbox-label">
@@ -316,6 +313,19 @@
     <!-- Toast 提示 -->
     <div v-if="toast.show" :class="['toast', toast.type]">
       {{ toast.message }}
+    </div>
+
+    <!-- 确认对话框 -->
+    <div v-if="showConfirmDialog" class="modal-overlay" @click="closeConfirmDialog">
+      <div class="confirm-dialog" @click.stop>
+        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-title">确认操作</div>
+        <div class="confirm-message">{{ confirmMessage }}</div>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost" @click="closeConfirmDialog">取消</button>
+          <button class="btn btn-primary" @click="handleConfirm">确定</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -346,7 +356,6 @@ const formData = reactive({
   taskName: '',
   taskType: 25,
   cronExpression: '0 0 2 * * ?',
-  pages: 44,
   enabled: true
 })
 
@@ -355,6 +364,11 @@ const toast = reactive({
   message: '',
   type: 'success'
 })
+
+// 确认对话框
+const showConfirmDialog = ref(false)
+const confirmMessage = ref('')
+const confirmCallback = ref(null)
 
 // Cron 表达式生成器
 const showCronGenerator = ref(false)
@@ -472,10 +486,10 @@ const openCreateModal = () => {
   modalTitle.value = '创建定时任务'
   Object.assign(formData, {
     taskName: '',
-    taskType: 25,
-    cronExpression: '0 0 2 * * ?',
-    pages: 44,
-    enabled: true
+    taskType: 24,
+    cronExpression: '0 */6 * * * ?',
+    enabled: true,
+    hour: 6
   })
   showModal.value = true
 }
@@ -491,8 +505,8 @@ const openEditModal = async (taskId) => {
       taskName: task.taskName,
       taskType: task.taskType,
       cronExpression: task.cronExpression,
-      pages: task.pages,
-      enabled: task.enabled
+      enabled: task.enabled,
+      hour: task.hour
     })
     showModal.value = true
   } catch (error) {
@@ -524,17 +538,15 @@ const saveTask = async () => {
 
 // 删除任务
 const deleteTask = async (taskId) => {
-  if (!confirm('确定要删除这个任务吗?')) {
-    return
-  }
-
-  try {
-    await deleteTaskApi(taskId)
-    showToast('删除成功')
-    loadTasks()
-  } catch (error) {
-    showToast('删除失败: ' + (error.message || '未知错误'), 'error')
-  }
+  showConfirm('确定要删除这个任务吗?', async () => {
+    try {
+      await deleteTaskApi(taskId)
+      showToast('删除成功')
+      loadTasks()
+    } catch (error) {
+      showToast('删除失败: ' + (error.message || '未知错误'), 'error')
+    }
+  })
 }
 
 // 启用/禁用任务
@@ -548,49 +560,65 @@ const toggleTask = async (taskId, enabled) => {
   }
 }
 
+// 显示确认对话框
+const showConfirm = (message, callback) => {
+  confirmMessage.value = message
+  confirmCallback.value = callback
+  showConfirmDialog.value = true
+}
+
+// 关闭确认对话框
+const closeConfirmDialog = () => {
+  showConfirmDialog.value = false
+  confirmMessage.value = ''
+  confirmCallback.value = null
+}
+
+// 处理确认
+const handleConfirm = () => {
+  if (confirmCallback.value) {
+    confirmCallback.value()
+  }
+  closeConfirmDialog()
+}
+
 // 立即执行任务
 const executeTask = async (taskId) => {
-  if (!confirm('确定要立即执行这个任务吗?')) {
-    return
-  }
-
-  try {
-    await executeTaskApi(taskId)
-    showToast('任务已启动执行')
-    setTimeout(loadTasks, 2000)
-  } catch (error) {
-    showToast('执行失败: ' + (error.message || '未知错误'), 'error')
-  }
+  showConfirm('确定要立即执行这个任务吗?', async () => {
+    try {
+      await executeTaskApi(taskId)
+      showToast('任务已启动执行')
+      setTimeout(loadTasks, 2000)
+    } catch (error) {
+      showToast('执行失败: ' + (error.message || '未知错误'), 'error')
+    }
+  })
 }
 
 // 取消任务
 const cancelTask = async (taskId) => {
-  if (!confirm('确定要取消这个任务吗?')) {
-    return
-  }
-
-  try {
-    await cancelTaskApi(taskId)
-    showToast('任务已取消')
-    loadTasks()
-  } catch (error) {
-    showToast('取消失败: ' + (error.message || '未知错误'), 'error')
-  }
+  showConfirm('确定要取消这个任务吗?', async () => {
+    try {
+      await cancelTaskApi(taskId)
+      showToast('任务已取消')
+      loadTasks()
+    } catch (error) {
+      showToast('取消失败: ' + (error.message || '未知错误'), 'error')
+    }
+  })
 }
 
 // 快速同步
-const quickSync = async (type, pages) => {
+const quickSync = async (type) => {
   const typeNames = { 25: '日本动漫', 26: '欧美动漫', 24: '中国动漫' }
-  if (!confirm(`确定要启动${typeNames[type]}同步任务吗?共 ${pages} 页`)) {
-    return
-  }
-
-  try {
-    const res = await quickSyncApi(type, pages)
-    showToast(res.data || '同步任务已启动')
-  } catch (error) {
-    showToast('同步失败: ' + (error.message || '未知错误'), 'error')
-  }
+  showConfirm(`确定要启动${typeNames[type]}同步任务吗?`, async () => {
+    try {
+      const res = await quickSyncApi(type)
+      showToast(res.data || '同步任务已启动')
+    } catch (error) {
+      showToast('同步失败: ' + (error.message || '未知错误'), 'error')
+    }
+  })
 }
 
 // 跳转到执行记录页面
@@ -1098,6 +1126,58 @@ onMounted(() => {
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+/* 确认对话框 */
+.confirm-dialog {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.confirm-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.confirm-message {
+  font-size: 14px;
+  color: var(--sub);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-actions .btn {
+  min-width: 100px;
 }
 
 @media (max-width: 768px) {

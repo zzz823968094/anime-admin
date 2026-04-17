@@ -32,12 +32,6 @@ const routes = [
         meta: { title: '网站用户' }
       },
       {
-        path: 'top100',
-        name: 'top100',
-        component: () => import('@/views/Top100.vue'),
-        meta: { title: '播放排行' }
-      },
-      {
         path: 'search',
         name: 'search',
         component: () => import('@/views/SearchStats.vue'),

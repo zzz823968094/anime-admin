@@ -41,9 +41,7 @@
             <th>任务类型</th>
             <th>开始时间</th>
             <th>结束时间</th>
-            <th>执行时长</th>
             <th>状态</th>
-            <th>爬取页数</th>
             <th>信息</th>
           </tr>
         </thead>
@@ -59,13 +57,11 @@
             </td>
             <td>{{ formatDateTime(log.startTime) }}</td>
             <td>{{ log.endTime ? formatDateTime(log.endTime) : '-' }}</td>
-            <td>{{ log.duration ? formatDuration(log.duration) : '-' }}</td>
             <td>
               <span :class="['status-badge', `status-${log.status?.toLowerCase()}`]">
                 {{ getStatusName(log.status) }}
               </span>
             </td>
-            <td>{{ log.pagesCrawled || 0 }}</td>
             <td class="message-cell" :title="log.message">
               {{ log.message || '-' }}
             </td>
@@ -102,7 +98,7 @@ import { getTaskLogs } from '@/utils/api'
 const logs = ref([])
 const loading = ref(false)
 const currentPage = ref(1)
-const pageSize = ref(20)
+const pageSize = ref(10)
 const total = ref(0)
 const filterTaskId = ref(null)
 
@@ -140,18 +136,6 @@ const formatDateTime = (dateTime) => {
   })
 }
 
-// 格式化执行时长
-const formatDuration = (duration) => {
-  if (!duration) return '-'
-  const seconds = (duration / 1000).toFixed(2)
-  const minutes = Math.floor(duration / 60000)
-  const secs = Math.floor((duration % 60000) / 1000)
-  
-  if (minutes > 0) {
-    return `${minutes}分${secs}秒`
-  }
-  return `${seconds}秒`
-}
 
 // 加载执行记录
 const loadLogs = async () => {
