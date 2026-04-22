@@ -17,7 +17,6 @@
           <option value="">全部状态</option>
           <option value="0">连载中</option>
           <option value="1">已完结</option>
-          <option value="2">已下线</option>
         </select>
         <select v-model="filters.type" class="ctrl" @change="loadAnime(1)">
           <option value="">全部分类</option>

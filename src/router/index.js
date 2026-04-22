@@ -38,6 +38,12 @@ const routes = [
         meta: { title: '搜索统计' }
       },
       {
+        path: 'app-versions',
+        name: 'app-versions',
+        component: () => import('@/views/AppVersionManagement.vue'),
+        meta: { title: 'App 版本管理' }
+      },
+      {
         path: 'crawler',
         name: 'crawler',
         component: () => import('@/views/Crawler.vue'),

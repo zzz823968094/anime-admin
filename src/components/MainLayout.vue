@@ -35,6 +35,13 @@
         >
           <span class="ic">🔍</span>搜索统计
         </button>
+        <button
+            class="sb-item"
+            :class="{ on: currentRoute === 'app-versions' }"
+            @click="navigate('app-versions')"
+        >
+          <span class="ic">📱</span>App 版本
+        </button>
         <div class="sb-section">系统</div>
         <button
           class="sb-item"
