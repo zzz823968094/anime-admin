@@ -44,6 +44,12 @@ const routes = [
         meta: { title: 'App 版本管理' }
       },
       {
+        path: 'carousels',
+        name: 'carousels',
+        component: () => import('@/views/CarouselManagement.vue'),
+        meta: { title: '轮播图管理' }
+      },
+      {
         path: 'crawler',
         name: 'crawler',
         component: () => import('@/views/Crawler.vue'),

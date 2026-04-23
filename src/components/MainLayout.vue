@@ -14,6 +14,14 @@
           <span class="ic">📊</span>数据概览
         </button>
         <div class="sb-section">内容管理</div>
+
+        <button
+          class="sb-item"
+          :class="{ on: currentRoute === 'carousels' }"
+          @click="navigate('carousels')"
+        >
+          <span class="ic">🖼️</span>轮播图管理
+        </button>
         <button
           class="sb-item"
           :class="{ on: currentRoute === 'anime' }"
