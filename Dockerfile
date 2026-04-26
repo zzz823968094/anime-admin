@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # 构建生产版本（使用 production 模式，自动读取 .env.production）
-RUN npm run build
+RUN npm run build:prod
 
 # 生产阶段
 FROM nginx:alpine

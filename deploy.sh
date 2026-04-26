@@ -38,7 +38,8 @@ echo "当前 API 地址: $(grep VITE_API_BASE_URL .env.production | cut -d'=' -f
 # 4. 重新构建并启动
 echo ""
 echo "[4/4] 重新构建并启动 Docker 服务..."
-docker compose up -d --build
+# 确保使用生产环境构建
+docker compose up -d --build --force-recreate
 echo "✓ Docker 服务已启动"
 
 # 4. 查看服务状态
