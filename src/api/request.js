@@ -1,9 +1,9 @@
 import axios from 'axios'
+import { getBaseURL } from '@/config/api.config'
 
 // 创建 axios 实例
 const request = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://lsj.animeparadise.vip',
-    // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+    baseURL: getBaseURL(),
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'

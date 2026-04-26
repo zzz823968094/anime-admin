@@ -1,0 +1,42 @@
+# 依赖
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境变量（开发环境）
+.env.development
+.env.local
+.env.*.local
+
+# 注意：.env.production 需要被复制到 Docker 镜像中用于构建
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# 文档
+README.md
+*.md
+
+# 测试
+coverage
+.nyc_output
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 脚本
+deploy.sh
+
+# 其他
+.qwen
+dist

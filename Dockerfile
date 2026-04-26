@@ -9,10 +9,10 @@ COPY package*.json ./
 # 安装依赖
 RUN npm ci
 
-# 复制源代码
+# 复制源代码（包括 .env.production）
 COPY . .
 
-# 构建生产版本
+# 构建生产版本（使用 production 模式，自动读取 .env.production）
 RUN npm run build
 
 # 生产阶段
