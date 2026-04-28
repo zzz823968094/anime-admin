@@ -33,6 +33,7 @@ export function uploadFile(file) {
     data: formData,
     headers: {
       'Content-Type': 'multipart/form-data'
-    }
+    },
+    timeout: 300000  // 5分钟超时，适用于大文件上传
   })
 }
