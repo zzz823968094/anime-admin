@@ -86,10 +86,7 @@ export const animeOff = (id) => {
   return del(`/api/anime/${id}`)
 }
 
-// 播放统计API
-export const getVisitStats = () => {
-  return get('/api/anime/visit/stats')
-}
+
 
 // 搜索统计API
 export const getSearchStats = (params = {}) => {

@@ -33,38 +33,9 @@
           <div class="stat-lbl">总播放量</div>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-ic ic-pink">👁️</div>
-        <div>
-          <div class="stat-val">{{ stats.todayUV || '—' }}</div>
-          <div class="stat-lbl">今日 UV</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-ic ic-blue">📊</div>
-        <div>
-          <div class="stat-val">{{ stats.todayPV || '—' }}</div>
-          <div class="stat-lbl">今日 PV</div>
-        </div>
-      </div>
     </div>
 
-    <!-- UV 趋势 -->
-    <div class="card">
-      <div class="sec-title">访问趋势(近7天 UV)</div>
-      <div v-if="uvTrend.length" class="uv-chart">
-        <div v-for="item in uvTrend" :key="item.date" class="uv-bar">
-          <div class="uv-value">{{ item.uv }}</div>
-          <div 
-            class="uv-bar-fill" 
-            :style="{ height: getBarHeight(item.uv) + 'px' }"
-            :title="`${item.date}: ${item.uv} UV`"
-          ></div>
-          <div class="uv-date">{{ item.date.slice(5) }}</div>
-        </div>
-      </div>
-      <div v-else class="loading-text">加载中…</div>
-    </div>
+
 
     <!-- 分类统计 -->
     <div class="card">
@@ -115,7 +86,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import {getAnimeStats, getVisitStats, getUserCount, getAnimeList, getVideoCount} from '@/utils/api'
+import {getAnimeStats, getUserCount, getAnimeList, getVideoCount} from '@/utils/api'
 
 const router = useRouter()
 
@@ -126,20 +97,14 @@ const stats = reactive({
   totalAnime: '—',
   totalVideo: '统计中',
   totalUser: '—',
-  totalView: '—',
-  todayUV: '—',
-  todayPV: '—'
+  totalView: '—'
 })
 
-const uvTrend = ref([])
+
 const typeStats = ref([])
 const recentAnime = ref([])
 
-const getBarHeight = (uv) => {
-  if (!uvTrend.value.length) return 4
-  const maxUV = Math.max(...uvTrend.value.map(t => t.uv), 1)
-  return Math.max(4, Math.round((uv / maxUV) * 72))
-}
+
 
 const loadStats = async () => {
   try {
@@ -181,17 +146,7 @@ const loadVideoCount = async () => {
   }
 }
 
-const loadUVStats = async () => {
-  try {
-    const res = await getVisitStats()
-    const s = res.data
-    stats.todayUV = (s.todayUV || 0).toLocaleString()
-    stats.todayPV = (s.todayPV || 0).toLocaleString()
-    uvTrend.value = s.trend || []
-  } catch (e) {
-    console.error('加载UV统计失败', e)
-  }
-}
+
 
 const loadRecentAnime = async () => {
   try {
@@ -205,49 +160,12 @@ const loadRecentAnime = async () => {
 onMounted(() => {
   loadStats()
   loadUserCount()
-  loadUVStats()
   loadRecentAnime()
   loadVideoCount()
 })
 </script>
 
 <style scoped>
-.uv-chart {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  height: 80px;
-  padding: 4px;
-}
-
-.uv-bar {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.uv-value {
-  font-size: 11px;
-  color: var(--text);
-  font-weight: 600;
-}
-
-.uv-bar-fill {
-  width: 100%;
-  background: linear-gradient(to top, var(--accent), var(--accent2));
-  border-radius: 4px 4px 0 0;
-  opacity: 0.8;
-  transition: opacity 0.2s;
-  cursor: default;
-}
-
-.uv-date {
-  font-size: 10px;
-  color: var(--sub);
-}
-
 .type-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
