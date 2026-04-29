@@ -148,4 +148,9 @@ export const getTaskLogs = (params) => {
   return get('/api/crawler/tasks/logs', params)
 }
 
+// 访问统计API
+export const getAccessStats = () => {
+  return get('/api/anime/access/stats')
+}
+
 export default api
