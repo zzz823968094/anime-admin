@@ -143,7 +143,8 @@ const stats = reactive({
   totalAnime: '—',
   totalVideo: '统计中',
   totalUser: '—',
-  totalView: '—'
+  totalView: '—',
+  todayView: '—'
 })
 
 
@@ -169,7 +170,7 @@ const loadStats = async () => {
     const s = res.data
     stats.totalAnime = (s.totalAnime || 0).toLocaleString()
     stats.totalView = (s.totalView || 0).toLocaleString()
-
+    stats.todayView = (s.todayView || 0).toLocaleString()
     typeStats.value = [
       {icon: '🇯🇵', label: '日本动漫', count: (s.jpCount || 0).toLocaleString()},
       {icon: '🌎', label: '欧美动漫', count: (s.usCount || 0).toLocaleString()},
