@@ -68,10 +68,6 @@ export const loginApi = (username, password) => {
 export const getUserCount = () => {
   return get('/api/user/count')
 }
-// 获取用户数量
-export const getVideoCount = () => {
-  return get('/api/video/totalCount')
-}
 // 番剧相关API
 export const getAnimeStats = () => {
   return get('/api/anime/stats')

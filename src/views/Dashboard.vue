@@ -6,30 +6,30 @@
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-ic ic-purple">🎌</div>
+        <div class="stat-ic ic-purple">📺</div>
         <div>
-          <div class="stat-val">{{ stats.totalAnime || '—' }}</div>
+          <div class="stat-val">{{ stats.totalAnime || '0' }}</div>
           <div class="stat-lbl">番剧总数</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-ic ic-blue">📺</div>
-        <div>
-          <div class="stat-val">{{ stats.totalVideo || '统计中' }}</div>
-          <div class="stat-lbl">视频集数</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-ic ic-green">👥</div>
         <div>
-          <div class="stat-val">{{ stats.totalUser || '—' }}</div>
+          <div class="stat-val">{{ stats.totalUser || '0' }}</div>
           <div class="stat-lbl">注册用户</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-ic ic-orange">▶️</div>
+        <div class="stat-ic ic-orange">今日</div>
         <div>
-          <div class="stat-val">{{ stats.totalView || '—' }}</div>
+          <div class="stat-val">{{ stats.todayView || '0' }}</div>
+          <div class="stat-lbl">今日播放量</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic ic-orange">ALL</div>
+        <div>
+          <div class="stat-val">{{ stats.totalView || '0' }}</div>
           <div class="stat-lbl">总播放量</div>
         </div>
       </div>
@@ -131,7 +131,7 @@
 <script setup>
 import {ref, reactive, onMounted, nextTick, onUnmounted} from 'vue'
 import {useRouter} from 'vue-router'
-import {getAnimeStats, getUserCount, getAnimeList, getVideoCount, getAccessStats} from '@/utils/api'
+import {getAnimeStats, getUserCount, getAnimeList, getAccessStats} from '@/utils/api'
 import * as echarts from 'echarts'
 
 const router = useRouter()
@@ -191,18 +191,6 @@ const loadUserCount = async () => {
     console.error('加载用户数失败', e)
   }
 }
-
-const loadVideoCount = async () => {
-  try {
-    const res = await getVideoCount()
-    if (res.code === 200) {
-      stats.totalVideo = res.data
-    }
-  } catch (e) {
-    console.error('加载视频集数失败', e)
-  }
-}
-
 
 const loadRecentAnime = async () => {
   try {
@@ -546,7 +534,6 @@ onMounted(() => {
   loadStats()
   loadUserCount()
   loadRecentAnime()
-  loadVideoCount()
   loadAccessStats()
   
   // 添加窗口resize事件监听

@@ -3,6 +3,11 @@
     <div class="page-hd">
       <div class="page-title">爬虫控制</div>
     </div>
+    <!-- 执行日志 -->
+    <div class="card">
+      <div class="sec-title">执行日志</div>
+      <div :class="['crawl-log', crawlLogType]">{{ crawlLog }}</div>
+    </div>
     <!-- 快速同步（全量） -->
     <div class="card">
       <div class="sec-title">全量爬取(适合初次导入数据)</div>
@@ -21,7 +26,23 @@
         </button>
       </div>
     </div>
-
+    <div class="card">
+      <div class="sec-title">失败数量,点击重启</div>
+      <div class="crawler-grid">
+        <button class="crawler-btn" @click="restartFail(25)">
+          <div class="cb-icon">{{japanTotal}}</div>
+          <div class="cb-title">🇯🇵日本动漫</div>
+        </button>
+        <button class="crawler-btn" @click="restartFail(26)">
+          <div class="cb-icon">{{usaTotal}}</div>
+          <div class="cb-title">🌎欧美动漫</div>
+        </button>
+        <button class="crawler-btn" @click="restartFail(24)">
+          <div class="cb-icon">{{chinaTotal}}</div>
+          <div class="cb-title">🇨🇳中国动漫</div>
+        </button>
+      </div>
+    </div>
     <!-- 按小时更新 -->
     <div class="card">
       <div class="sec-title">按小时更新（指定分类+时间范围）</div>
@@ -77,31 +98,51 @@
         </button>
       </div>
     </div>
-
-
-
-    <!-- 执行日志 -->
-    <div class="card">
-      <div class="sec-title">执行日志</div>
-      <div :class="['crawl-log', crawlLogType]">{{ crawlLog }}</div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { crawlNow, crawlerAllSync } from '@/utils/api'
+import { getFailRecords, restartCrawler } from '@/api/crawler'
 
 const crawlLog = ref('点击上方按钮触发爬取任务')
 const crawlLogType = ref('')
+const chinaTotal = ref(0)
+const japanTotal = ref(0)
+const usaTotal = ref(0)
 
 const setLog = (msg, type = '') => {
   crawlLog.value = msg
   crawlLogType.value = type
 }
+const getFailList = async () => {
+  try {
+    const res = await getFailRecords()
+    if (res.code === 200) {
+      chinaTotal.value = res.data.china;
+      japanTotal.value = res.data.japan;
+      usaTotal.value = res.data.usa;
+    }
+  } catch (e) {
+    setLog('获取失败记录失败: ' + (e.message || '未知错误'), 'err')
+  }
+}
 
-
-
+const restartFail = async (type) => {
+  setLog(`正在启动${type}动漫失败ID重新获取...`, 'loading')
+  try {
+    const res = await restartCrawler(type)
+    if (res.code === 200) {
+      await getFailList();
+      setLog(`${type}动漫失败ID重新获取,获取成功`, 'ok')
+    } else {
+      setLog('重新获取数据失败: ' + res.message, 'err')
+    }
+  } catch (e) {
+    setLog('重新获取数据失败: ' + (e.message || '未知错误'), 'err')
+  }
+}
 const crawlByHour = async (type, hour) => {
   try {
     const typeName = type === 25 ? '日本' : type === 26 ? '欧美' : '中国'
@@ -125,6 +166,7 @@ const handleCrawlerAllSync = async (type) => {
 }
 
 onMounted(() => {
+  getFailList();
   setLog('准备就绪，请选择爬取任务')
 })
 </script>

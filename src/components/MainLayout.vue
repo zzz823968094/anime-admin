@@ -27,7 +27,7 @@
           :class="{ on: currentRoute === 'anime' }"
           @click="navigate('anime')"
         >
-          <span class="ic">🎌</span>番剧管理
+          <span class="ic">📺</span>番剧管理
         </button>
         <button
           class="sb-item"
