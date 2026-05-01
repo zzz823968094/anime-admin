@@ -20,3 +20,15 @@ export function restartCrawler(type) {
     method: 'put'
   })
 }
+
+/**
+ * 根据ID重新爬取番剧数据
+ * @param {number} id - 番剧ID
+ */
+export function crawlById(id) {
+  return request({
+    url: '/api/crawler/crawl',
+    method: 'put',
+    params: { id }
+  })
+}

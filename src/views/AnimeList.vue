@@ -55,6 +55,9 @@
               STATUS_MAP[anime.vodIsend]?.[0] || '未知'
             }}</span></td>
           <td>
+            <button class="btn btn-ghost btn-sm" :disabled="recrawlingIds.has(anime.id)" @click="recrawl(anime)">
+              {{ recrawlingIds.has(anime.id) ? '爬取中...' : '重新爬取' }}
+            </button>
             <button class="btn btn-ghost btn-sm" @click="off(anime)">下架</button>
           </td>
         </tr>
@@ -100,6 +103,7 @@
 <script setup>
 import {computed, onMounted, reactive, ref} from 'vue'
 import {animeOff, getAnimeList} from '@/utils/api'
+import {crawlById} from '@/api/crawler'
 
 const TYPE_MAP = {'25': '🇯🇵 日本', '26': '🌎 欧美', '24': '🇨🇳 中国'}
 const STATUS_MAP = {0: ['连载中', 'b-green'], 1: ['已完结', 'b-blue'], 2: ['已下线', 'b-red']}
@@ -117,6 +121,9 @@ const total = ref(0)
 
 const animeTotalLabel = ref('')
 const totalPages = ref(1)
+
+// 记录正在爬取的番剧ID
+const recrawlingIds = ref(new Set())
 
 // 计算显示的页码（带省略号）
 const displayPages = computed(() => {
@@ -216,6 +223,27 @@ const off = async (anime) => {
   } catch (e) {
     console.error('下架番剧失败', e)
     showToast('下架失败，请稍后重试', 'error')
+  }
+}
+
+const recrawl = async (anime) => {
+  // 添加到爬取中的集合
+  recrawlingIds.value.add(anime.id)
+  
+  try {
+    const res = await crawlById(anime.id)
+    if (res.code === 200) {
+      showToast('重新爬取任务已提交')
+    } else {
+      showToast(res.message || '重新爬取失败', 'error')
+    }
+  } catch (e) {
+    console.error('重新爬取番剧失败', e)
+    showToast('重新爬取失败，请稍后重试', 'error')
+  } finally {
+    // 从爬取中的集合移除
+    recrawlingIds.value.delete(anime.id)
+    await loadAnime(currentPage.value)
   }
 }
 
