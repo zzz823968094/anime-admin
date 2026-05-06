@@ -24,6 +24,20 @@
         </button>
         <button
           class="sb-item"
+          :class="{ on: currentRoute === 'ads' }"
+          @click="navigate('ads')"
+        >
+          <span class="ic">📢</span>广告管理
+        </button>
+        <button
+          class="sb-item"
+          :class="{ on: currentRoute === 'ad-positions' }"
+          @click="navigate('ad-positions')"
+        >
+          <span class="ic">📍</span>广告位管理
+        </button>
+        <button
+          class="sb-item"
           :class="{ on: currentRoute === 'anime' }"
           @click="navigate('anime')"
         >

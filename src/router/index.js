@@ -50,6 +50,18 @@ const routes = [
         meta: { title: '轮播图管理' }
       },
       {
+        path: 'ads',
+        name: 'ads',
+        component: () => import('@/views/AdManagement.vue'),
+        meta: { title: '广告管理' }
+      },
+      {
+        path: 'ad-positions',
+        name: 'ad-positions',
+        component: () => import('@/views/AdPositionManagement.vue'),
+        meta: { title: '广告位管理' }
+      },
+      {
         path: 'crawler',
         name: 'crawler',
         component: () => import('@/views/Crawler.vue'),
