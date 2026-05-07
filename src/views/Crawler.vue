@@ -12,6 +12,32 @@
     <div class="card">
       <div class="sec-title">全量爬取(适合初次导入数据)</div>
       <div class="crawler-grid">
+        <button class="crawler-btn" @click="handleCrawlerNewAllSync(66)">
+          <div class="cb-icon">China</div>
+          <div class="cb-title">国产动漫</div>
+        </button>
+        <button class="crawler-btn" @click="handleCrawlerNewAllSync(67)">
+          <div class="cb-icon">Japan</div>
+          <div class="cb-title">日韩动漫</div>
+        </button>
+        <button class="crawler-btn" @click="handleCrawlerNewAllSync(68)">
+          <div class="cb-icon">USA</div>
+          <div class="cb-title">欧美动漫</div>
+        </button>
+        <button class="crawler-btn" @click="handleCrawlerNewAllSync(69)">
+          <div class="cb-icon">HK</div>
+          <div class="cb-title">港台动漫</div>
+        </button>
+        <button class="crawler-btn" @click="handleCrawlerNewAllSync(70)">
+          <div class="cb-icon">🌎</div>
+          <div class="cb-title">海外动漫</div>
+        </button>
+      </div>
+    </div>
+    <!-- 快速同步（全量） -->
+    <div class="card">
+      <div class="sec-title">全量爬取(适合初次导入数据)</div>
+      <div class="crawler-grid">
         <button class="crawler-btn" @click="handleCrawlerAllSync(25)">
           <div class="cb-icon">🇯🇵</div>
           <div class="cb-title">日本动漫</div>
@@ -30,15 +56,15 @@
       <div class="sec-title">失败数量,点击重启</div>
       <div class="crawler-grid">
         <button class="crawler-btn" @click="restartFail(25)">
-          <div class="cb-icon">{{japanTotal}}</div>
+          <div class="cb-icon">{{ japanTotal }}</div>
           <div class="cb-title">🇯🇵日本动漫</div>
         </button>
         <button class="crawler-btn" @click="restartFail(26)">
-          <div class="cb-icon">{{usaTotal}}</div>
+          <div class="cb-icon">{{ usaTotal }}</div>
           <div class="cb-title">🌎欧美动漫</div>
         </button>
         <button class="crawler-btn" @click="restartFail(24)">
-          <div class="cb-icon">{{chinaTotal}}</div>
+          <div class="cb-icon">{{ chinaTotal }}</div>
           <div class="cb-title">🇨🇳中国动漫</div>
         </button>
       </div>
@@ -102,9 +128,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { crawlNow, crawlerAllSync } from '@/utils/api'
-import { getFailRecords, restartCrawler } from '@/api/crawler'
+import {ref, onMounted} from 'vue'
+import {crawlNow, crawlerAllSync, crawlerNewAllSync} from '@/utils/api'
+import {getFailRecords, restartCrawler} from '@/api/crawler'
 
 const crawlLog = ref('点击上方按钮触发爬取任务')
 const crawlLogType = ref('')
@@ -147,10 +173,21 @@ const crawlByHour = async (type, hour) => {
   try {
     const typeName = type === 25 ? '日本' : type === 26 ? '欧美' : '中国'
     setLog(`正在启动${typeName}动漫最近${hour}小时更新...`, 'loading')
-    await crawlNow({ type, hour })
+    await crawlNow({type, hour})
     setLog(`${typeName}动漫最近${hour}小时更新任务已启动`, 'ok')
   } catch (e) {
     setLog('按小时更新任务启动失败: ' + (e.message || '未知错误'), 'err')
+  }
+}
+
+const handleCrawlerNewAllSync = async (type) => {
+  try {
+    const typeName = type === 25 ? '日本' : type === 26 ? '欧美' : '中国'
+    setLog(`正在启动${typeName}动漫全量入库...`, 'loading')
+    await crawlerNewAllSync(type)
+    setLog(`${typeName}动漫全量入库任务已启动`, 'ok')
+  } catch (e) {
+    setLog('全量入库任务启动失败: ' + (e.message || '未知错误'), 'err')
   }
 }
 
