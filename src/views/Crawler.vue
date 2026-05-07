@@ -103,7 +103,7 @@
 
 <script setup>
 import {ref, onMounted} from 'vue'
-import {crawlNow, crawlerAllSync, crawlerNewAllSync} from '@/utils/api'
+import {crawlNow, crawlerAllSync} from '@/utils/api'
 import {getFailRecords, restartCrawler} from '@/api/crawler'
 
 const crawlLog = ref('点击上方按钮触发爬取任务')
