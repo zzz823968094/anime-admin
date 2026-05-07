@@ -102,7 +102,6 @@
           <th>标题</th>
           <th>分类</th>
           <th>集数</th>
-          <th>状态</th>
           <th>入库时间</th>
         </tr>
         </thead>
@@ -117,9 +116,6 @@
           </td>
           <td>{{ TYPE_MAP[anime.typeId] || anime.typeId || '—' }}</td>
           <td>第 {{ anime.vodTotal }} 集</td>
-          <td><span :class="['badge', STATUS_MAP[anime.vodIsend]?.[1] || 'b-gray']">{{
-              STATUS_MAP[anime.vodIsend]?.[0] || '未知'
-            }}</span></td>
           <td style="color:var(--sub)">{{ (anime.createAt || '').slice(0, 10) }}</td>
         </tr>
         </tbody>
@@ -136,7 +132,7 @@ import * as echarts from 'echarts'
 
 const router = useRouter()
 
-const TYPE_MAP = {'25': '🇯🇵 日本', '26': '🌎 欧美', '24': '🇨🇳 中国'}
+const TYPE_MAP = {'67': '🇯🇵 日韩', '68': '🌎 欧美', '66': '🇨🇳 中文'}
 const STATUS_MAP = {0: ['连载中', 'b-green'], 1: ['已完结', 'b-blue'], 2: ['已下线', 'b-red']}
 
 const stats = reactive({
@@ -172,9 +168,9 @@ const loadStats = async () => {
     stats.totalView = (s.totalView || 0).toLocaleString()
     stats.todayView = (s.todayView || 0).toLocaleString()
     typeStats.value = [
-      {icon: '🇯🇵', label: '日本动漫', count: (s.jpCount || 0).toLocaleString()},
+      {icon: '🇯🇵', label: '日韩动漫', count: (s.jpCount || 0).toLocaleString()},
       {icon: '🌎', label: '欧美动漫', count: (s.usCount || 0).toLocaleString()},
-      {icon: '🇨🇳', label: '中国动漫', count: (s.cnCount || 0).toLocaleString()},
+      {icon: '🇨🇳', label: '中文动漫', count: (s.cnCount || 0).toLocaleString()},
       {icon: '📊', label: '全部', count: (s.totalAnime || 0).toLocaleString()}
     ]
   } catch (e) {

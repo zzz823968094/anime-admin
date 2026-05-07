@@ -106,7 +106,7 @@ const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
 // 获取类型名称
 const getTypeName = (type) => {
-  const types = { 25: '日本动漫', 26: '欧美动漫', 24: '中国动漫' }
+  const types = { 66: '中文动漫', 67: '日韩动漫', 68: '欧美动漫' }
   return types[type] || '未知'
 }
 
@@ -212,19 +212,19 @@ onMounted(() => {
   display: inline-block;
 }
 
-.type-25 {
+.type-66 {
+  background: #c3dafe;
+  color: #3730a3;
+}
+
+.type-67 {
   background: #fed7e2;
   color: #97266d;
 }
 
-.type-26 {
+.type-68 {
   background: #feebc8;
   color: #c05621;
-}
-
-.type-24 {
-  background: #c3dafe;
-  color: #3730a3;
 }
 
 .status-badge {

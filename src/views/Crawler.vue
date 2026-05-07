@@ -24,48 +24,40 @@
           <div class="cb-icon">USA</div>
           <div class="cb-title">欧美动漫</div>
         </button>
-        <button class="crawler-btn" @click="handleCrawlerNewAllSync(69)">
-          <div class="cb-icon">HK</div>
-          <div class="cb-title">港台动漫</div>
-        </button>
-        <button class="crawler-btn" @click="handleCrawlerNewAllSync(70)">
-          <div class="cb-icon">🌎</div>
-          <div class="cb-title">海外动漫</div>
-        </button>
       </div>
     </div>
     <!-- 快速同步（全量） -->
     <div class="card">
       <div class="sec-title">全量爬取(适合初次导入数据)</div>
       <div class="crawler-grid">
-        <button class="crawler-btn" @click="handleCrawlerAllSync(25)">
+        <button class="crawler-btn" @click="handleCrawlerAllSync(67)">
           <div class="cb-icon">🇯🇵</div>
-          <div class="cb-title">日本动漫</div>
+          <div class="cb-title">日韩动漫</div>
         </button>
-        <button class="crawler-btn" @click="handleCrawlerAllSync(26)">
+        <button class="crawler-btn" @click="handleCrawlerAllSync(68)">
           <div class="cb-icon">🌎</div>
           <div class="cb-title">欧美动漫</div>
         </button>
-        <button class="crawler-btn" @click="handleCrawlerAllSync(24)">
+        <button class="crawler-btn" @click="handleCrawlerAllSync(66)">
           <div class="cb-icon">🇨🇳</div>
-          <div class="cb-title">中国动漫</div>
+          <div class="cb-title">中文动漫</div>
         </button>
       </div>
     </div>
     <div class="card">
       <div class="sec-title">失败数量,点击重启</div>
       <div class="crawler-grid">
-        <button class="crawler-btn" @click="restartFail(25)">
+        <button class="crawler-btn" @click="restartFail(67)">
           <div class="cb-icon">{{ japanTotal }}</div>
-          <div class="cb-title">🇯🇵日本动漫</div>
+          <div class="cb-title">🇯🇵日韩动漫</div>
         </button>
-        <button class="crawler-btn" @click="restartFail(26)">
+        <button class="crawler-btn" @click="restartFail(68)">
           <div class="cb-icon">{{ usaTotal }}</div>
           <div class="cb-title">🌎欧美动漫</div>
         </button>
-        <button class="crawler-btn" @click="restartFail(24)">
+        <button class="crawler-btn" @click="restartFail(66)">
           <div class="cb-icon">{{ chinaTotal }}</div>
-          <div class="cb-title">🇨🇳中国动漫</div>
+          <div class="cb-title">🇨🇳中文动漫</div>
         </button>
       </div>
     </div>
@@ -73,53 +65,53 @@
     <div class="card">
       <div class="sec-title">按小时更新（指定分类+时间范围）</div>
       <div class="crawler-grid">
-        <button class="crawler-btn" @click="crawlByHour(25, 3)">
+        <button class="crawler-btn" @click="crawlByHour(67, 3)">
           <div class="cb-icon">🇯🇵</div>
-          <div class="cb-title">日本动漫</div>
+          <div class="cb-title">日韩动漫</div>
           <div class="cb-desc">最近3小时</div>
         </button>
-        <button class="crawler-btn" @click="crawlByHour(26, 3)">
+        <button class="crawler-btn" @click="crawlByHour(68, 3)">
           <div class="cb-icon">🌎</div>
           <div class="cb-title">欧美动漫</div>
           <div class="cb-desc">最近3小时</div>
         </button>
-        <button class="crawler-btn" @click="crawlByHour(24, 3)">
+        <button class="crawler-btn" @click="crawlByHour(66, 3)">
           <div class="cb-icon">🇨🇳</div>
-          <div class="cb-title">中国动漫</div>
+          <div class="cb-title">中文动漫</div>
           <div class="cb-desc">最近3小时</div>
         </button>
       </div>
       <div class="crawler-grid">
-        <button class="crawler-btn" @click="crawlByHour(25, 6)">
+        <button class="crawler-btn" @click="crawlByHour(67, 6)">
           <div class="cb-icon">🇯🇵</div>
-          <div class="cb-title">日本动漫</div>
+          <div class="cb-title">日韩动漫</div>
           <div class="cb-desc">最近6小时</div>
         </button>
-        <button class="crawler-btn" @click="crawlByHour(26, 6)">
+        <button class="crawler-btn" @click="crawlByHour(68, 6)">
           <div class="cb-icon">🌎</div>
           <div class="cb-title">欧美动漫</div>
           <div class="cb-desc">最近6小时</div>
         </button>
-        <button class="crawler-btn" @click="crawlByHour(24, 6)">
+        <button class="crawler-btn" @click="crawlByHour(66, 6)">
           <div class="cb-icon">🇨🇳</div>
-          <div class="cb-title">中国动漫</div>
+          <div class="cb-title">中文动漫</div>
           <div class="cb-desc">最近6小时</div>
         </button>
       </div>
       <div class="crawler-grid">
-        <button class="crawler-btn" @click="crawlByHour(25, 12)">
+        <button class="crawler-btn" @click="crawlByHour(67, 12)">
           <div class="cb-icon">🇯🇵</div>
-          <div class="cb-title">日本动漫</div>
+          <div class="cb-title">日韩动漫</div>
           <div class="cb-desc">最近12小时</div>
         </button>
-        <button class="crawler-btn" @click="crawlByHour(26, 12)">
+        <button class="crawler-btn" @click="crawlByHour(68, 12)">
           <div class="cb-icon">🌎</div>
           <div class="cb-title">欧美动漫</div>
           <div class="cb-desc">最近12小时</div>
         </button>
-        <button class="crawler-btn" @click="crawlByHour(24, 12)">
+        <button class="crawler-btn" @click="crawlByHour(66, 12)">
           <div class="cb-icon">🇨🇳</div>
-          <div class="cb-title">中国动漫</div>
+          <div class="cb-title">中文动漫</div>
           <div class="cb-desc">最近12小时</div>
         </button>
       </div>
@@ -171,7 +163,7 @@ const restartFail = async (type) => {
 }
 const crawlByHour = async (type, hour) => {
   try {
-    const typeName = type === 25 ? '日本' : type === 26 ? '欧美' : '中国'
+    const typeName = type === 67 ? '日韩' : type === 68 ? '欧美' : '中文'
     setLog(`正在启动${typeName}动漫最近${hour}小时更新...`, 'loading')
     await crawlNow({type, hour})
     setLog(`${typeName}动漫最近${hour}小时更新任务已启动`, 'ok')
@@ -182,7 +174,7 @@ const crawlByHour = async (type, hour) => {
 
 const handleCrawlerNewAllSync = async (type) => {
   try {
-    const typeName = type === 25 ? '日本' : type === 26 ? '欧美' : '中国'
+    const typeName = type === 67 ? '日韩' : type === 68 ? '欧美' : '中文'
     setLog(`正在启动${typeName}动漫全量入库...`, 'loading')
     await crawlerNewAllSync(type)
     setLog(`${typeName}动漫全量入库任务已启动`, 'ok')
@@ -193,7 +185,7 @@ const handleCrawlerNewAllSync = async (type) => {
 
 const handleCrawlerAllSync = async (type) => {
   try {
-    const typeName = type === 25 ? '日本' : type === 26 ? '欧美' : '中国'
+    const typeName = type === 67 ? '日韩' : type === 68 ? '欧美' : '中文'
     setLog(`正在启动${typeName}动漫全量入库...`, 'loading')
     await crawlerAllSync(type)
     setLog(`${typeName}动漫全量入库任务已启动`, 'ok')

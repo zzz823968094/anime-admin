@@ -12,7 +12,7 @@ export function getFailRecords() {
 
 /**
  * 重启指定类型的爬虫任务
- * @param {number} type - 爬虫类型 (24: 中国, 25: 日本, 26: 美国)
+ * @param {number} type - 爬虫类型 (66: 中文, 67: 日韩, 68: 欧美)
  */
 export function restartCrawler(type) {
   return request({

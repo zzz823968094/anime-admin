@@ -45,7 +45,7 @@
 import { ref, onMounted } from 'vue'
 import { getTop100 } from '@/utils/api'
 
-const TYPE_MAP = { '25': '🇯🇵 日本', '26': '🌎 欧美', '24': '🇨🇳 中国' }
+const TYPE_MAP = { '67': '🇯🇵 日韩', '68': '🌎 欧美', '66': '🇨🇳 中文' }
 const STATUS_MAP = { 0: ['已下线', 'b-red'], 1: ['连载中', 'b-green'], 2: ['已完结', 'b-blue'] }
 
 const top100List = ref([])

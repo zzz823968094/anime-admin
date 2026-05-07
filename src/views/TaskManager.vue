@@ -20,14 +20,14 @@
           </button>
         </div>
         <div class="toolbar-right">
-          <button class="btn btn-success" @click="quickSync(25, 44)">
-            日本动漫(24H内数据同步)
+          <button class="btn btn-success" @click="quickSync(67, 44)">
+            日韩动漫(24H内数据同步)
           </button>
-          <button class="btn btn-warning" @click="quickSync(26, 9)">
+          <button class="btn btn-warning" @click="quickSync(68, 9)">
             欧美动漫(24H内数据同步)
           </button>
-          <button class="btn btn-primary" @click="quickSync(24, 47)">
-            中国动漫(24H内数据同步)
+          <button class="btn btn-primary" @click="quickSync(66, 47)">
+            中文动漫(24H内数据同步)
           </button>
         </div>
       </div>
@@ -132,15 +132,15 @@
               v-model="formData.taskName"
               type="text"
               required
-              placeholder="例如:中国动漫每日同步"
+              placeholder="例如:中文动漫每日同步"
             />
           </div>
           <div class="form-group">
             <label for="taskType">任务类型 *</label>
             <select id="taskType" v-model="formData.taskType" required>
-              <option :value="25">日本动漫</option>
-              <option :value="26">欧美动漫</option>
-              <option :value="24">中国动漫</option>
+              <option :value="67">日韩动漫</option>
+              <option :value="68">欧美动漫</option>
+              <option :value="66">中文动漫</option>
             </select>
           </div>
           <div class="form-group">
@@ -449,7 +449,7 @@ const loadTasks = async () => {
 
 // 获取类型名称
 const getTypeName = (type) => {
-  const types = { 25: '日本动漫', 26: '欧美动漫', 24: '中国动漫' }
+  const types = { 67: '日韩动漫', 68: '欧美动漫', 66: '中文动漫' }
   return types[type] || '未知'
 }
 
@@ -486,7 +486,7 @@ const openCreateModal = () => {
   modalTitle.value = '创建定时任务'
   Object.assign(formData, {
     taskName: '',
-    taskType: 24,
+    taskType: 66,
     cronExpression: '0 */6 * * * ?',
     enabled: true,
     hour: 6
@@ -610,7 +610,7 @@ const cancelTask = async (taskId) => {
 
 // 快速同步
 const quickSync = async (type) => {
-  const typeNames = { 25: '日本动漫', 26: '欧美动漫', 24: '中国动漫' }
+  const typeNames = { 67: '日韩动漫', 68: '欧美动漫', 66: '中文动漫' }
   showConfirm(`确定要启动${typeNames[type]}同步任务吗?`, async () => {
     try {
       const res = await quickSyncApi(type)
@@ -661,17 +661,17 @@ onMounted(() => {
   display: inline-block;
 }
 
-.type-25 {
+.type-67 {
   background: rgba(236, 72, 153, 0.12);
   color: #f472b6;
 }
 
-.type-26 {
+.type-68 {
   background: rgba(249, 115, 22, 0.12);
   color: #fb923c;
 }
 
-.type-24 {
+.type-66 {
   background: rgba(99, 102, 241, 0.12);
   color: #818cf8;
 }

@@ -13,16 +13,11 @@
             style="width:220px"
             @keydown.enter="loadAnime(1)"
         />
-        <select v-model="filters.status" class="ctrl" @change="loadAnime(1)">
-          <option value="">全部状态</option>
-          <option value="0">连载中</option>
-          <option value="1">已完结</option>
-        </select>
         <select v-model="filters.type" class="ctrl" @change="loadAnime(1)">
           <option value="">全部分类</option>
-          <option value="25">🇯🇵 日本动漫</option>
-          <option value="26">🌎 欧美动漫</option>
-          <option value="24">🇨🇳 中国动漫</option>
+          <option value="67">🇯🇵 日韩动漫</option>
+          <option value="68">🌎 欧美动漫</option>
+          <option value="66">🇨🇳 中文动漫</option>
         </select>
         <button class="btn btn-primary" @click="loadAnime(1)">搜索</button>
         <button class="btn btn-ghost" @click="resetFilter">重置</button>
@@ -37,7 +32,6 @@
           <th>分类</th>
           <th>集数</th>
           <th>评分</th>
-          <th>状态</th>
           <th>操作</th>
         </tr>
         </thead>
@@ -51,9 +45,6 @@
           <td>{{ TYPE_MAP[anime.typeId] || anime.typeId || '—' }}</td>
           <td>第 {{ anime.vodTotal }} 集</td>
           <td>{{ anime.vodScore || '—' }} ★</td>
-          <td><span :class="['badge', STATUS_MAP[anime.status]?.[1] || 'b-gray']">{{
-              STATUS_MAP[anime.vodIsend]?.[0] || '未知'
-            }}</span></td>
           <td>
             <button class="btn btn-ghost btn-sm" :disabled="recrawlingIds.has(anime.id)" @click="recrawl(anime)">
               {{ recrawlingIds.has(anime.id) ? '爬取中...' : '重新爬取' }}
@@ -105,8 +96,7 @@ import {computed, onMounted, reactive, ref} from 'vue'
 import {animeOff, getAnimeList} from '@/utils/api'
 import {crawlById} from '@/api/crawler'
 
-const TYPE_MAP = {'25': '🇯🇵 日本', '26': '🌎 欧美', '24': '🇨🇳 中国'}
-const STATUS_MAP = {0: ['连载中', 'b-green'], 1: ['已完结', 'b-blue'], 2: ['已下线', 'b-red']}
+const TYPE_MAP = {'67': '🇯🇵 日韩', '68': '🌎 欧美', '66': '🇨🇳 中文'}
 
 const filters = reactive({
   keyword: '',
