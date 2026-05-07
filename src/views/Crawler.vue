@@ -12,34 +12,16 @@
     <div class="card">
       <div class="sec-title">全量爬取(适合初次导入数据)</div>
       <div class="crawler-grid">
-        <button class="crawler-btn" @click="handleCrawlerNewAllSync(66)">
-          <div class="cb-icon">China</div>
-          <div class="cb-title">国产动漫</div>
-        </button>
-        <button class="crawler-btn" @click="handleCrawlerNewAllSync(67)">
+        <button class="crawler-btn" @click="handleCrawlerAllSync(67)">
           <div class="cb-icon">Japan</div>
           <div class="cb-title">日韩动漫</div>
         </button>
-        <button class="crawler-btn" @click="handleCrawlerNewAllSync(68)">
-          <div class="cb-icon">USA</div>
-          <div class="cb-title">欧美动漫</div>
-        </button>
-      </div>
-    </div>
-    <!-- 快速同步（全量） -->
-    <div class="card">
-      <div class="sec-title">全量爬取(适合初次导入数据)</div>
-      <div class="crawler-grid">
-        <button class="crawler-btn" @click="handleCrawlerAllSync(67)">
-          <div class="cb-icon">🇯🇵</div>
-          <div class="cb-title">日韩动漫</div>
-        </button>
         <button class="crawler-btn" @click="handleCrawlerAllSync(68)">
-          <div class="cb-icon">🌎</div>
+          <div class="cb-icon">US</div>
           <div class="cb-title">欧美动漫</div>
         </button>
         <button class="crawler-btn" @click="handleCrawlerAllSync(66)">
-          <div class="cb-icon">🇨🇳</div>
+          <div class="cb-icon">China</div>
           <div class="cb-title">中文动漫</div>
         </button>
       </div>
@@ -169,17 +151,6 @@ const crawlByHour = async (type, hour) => {
     setLog(`${typeName}动漫最近${hour}小时更新任务已启动`, 'ok')
   } catch (e) {
     setLog('按小时更新任务启动失败: ' + (e.message || '未知错误'), 'err')
-  }
-}
-
-const handleCrawlerNewAllSync = async (type) => {
-  try {
-    const typeName = type === 67 ? '日韩' : type === 68 ? '欧美' : '中文'
-    setLog(`正在启动${typeName}动漫全量入库...`, 'loading')
-    await crawlerNewAllSync(type)
-    setLog(`${typeName}动漫全量入库任务已启动`, 'ok')
-  } catch (e) {
-    setLog('全量入库任务启动失败: ' + (e.message || '未知错误'), 'err')
   }
 }
 

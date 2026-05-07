@@ -96,9 +96,6 @@ export const crawlNow = (data) => {
 export const crawlerAllSync = (type) => {
   return post(`/api/crawler/incremental/${type}`)
 }
-export const crawlerNewAllSync = (type) => {
-  return post(`/api/crawler/incremental/new/${type}`)
-}
 
 // Top100 API
 export const getTop100 = () => {
