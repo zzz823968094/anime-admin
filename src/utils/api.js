@@ -149,4 +149,9 @@ export const getAccessStats = () => {
   return get('/api/anime/access/stats')
 }
 
+// 设备统计API
+export const getDeviceStats = (params = {}) => {
+  return get('/api/anime/device/stats', params)
+}
+
 export default api

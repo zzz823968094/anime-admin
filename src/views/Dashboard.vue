@@ -92,6 +92,75 @@
       </div>
     </div>
 
+    <!-- 设备统计排名 -->
+    <div class="card">
+      <div class="chart-header">
+        <div class="sec-title">📱 设备型号统计排名</div>
+        <div class="chart-controls">
+          <button
+              v-for="days in [7, 30, 90]"
+              :key="days"
+              :class="['time-btn', { active: deviceSelectedDays === days }]"
+              @click="changeDeviceTimeRange(days)"
+          >
+            {{ days }}天
+          </button>
+        </div>
+      </div>
+      <div v-if="loadingDevice" class="loading-text">加载中...</div>
+      <div v-else-if="!deviceData.trend || deviceData.trend.length === 0" class="loading-text">暂无设备数据</div>
+      <div v-else>
+        <table class="tbl">
+          <thead>
+          <tr>
+            <th style="width: 60px;">排名</th>
+            <th>设备型号</th>
+            <th>操作系统</th>
+            <th style="width: 120px;">访问人数</th>
+            <th style="width: 150px;">占比</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="(device, index) in topDevices" :key="index">
+            <td>
+              <span :class="['rank-badge', getRankClass(index)]">{{ index + 1 }}</span>
+            </td>
+            <td>
+              <div class="device-info">
+                <span class="device-model">{{ device.deviceModel }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="os-badge">{{ device.os }}</span>
+            </td>
+            <td>
+              <span class="user-count">{{ device.userCount?.toLocaleString() || 0 }}</span>
+            </td>
+            <td>
+              <div class="percentage-bar">
+                <div 
+                  class="percentage-fill" 
+                  :style="{ width: getPercentage(device.userCount) + '%' }"
+                ></div>
+                <span class="percentage-text">{{ getPercentage(device.userCount).toFixed(2) }}%</span>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <div class="device-summary">
+          <div class="summary-item">
+            <span class="summary-label">总访问人数：</span>
+            <span class="summary-value">{{ deviceData.totalUserCount?.toLocaleString() || 0 }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">设备类型数：</span>
+            <span class="summary-value">{{ deviceData.trend?.length || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 最新入库番剧 -->
     <div class="card">
       <div class="sec-title">最新入库番剧</div>
@@ -125,9 +194,9 @@
 </template>
 
 <script setup>
-import {ref, reactive, onMounted, nextTick, onUnmounted} from 'vue'
+import {ref, reactive, onMounted, nextTick, onUnmounted, computed} from 'vue'
 import {useRouter} from 'vue-router'
-import {getAnimeStats, getUserCount, getAnimeList, getAccessStats} from '@/utils/api'
+import {getAnimeStats, getUserCount, getAnimeList, getAccessStats, getDeviceStats} from '@/utils/api'
 import * as echarts from 'echarts'
 
 const router = useRouter()
@@ -158,6 +227,15 @@ const accessData = reactive({
 })
 const chartContainer = ref(null)
 let chartInstance = null
+
+// 设备统计相关
+const loadingDevice = ref(false)
+const deviceSelectedDays = ref(7)
+const deviceData = reactive({
+  totalUserCount: 0,
+  trend: [],
+  rawTrend: [] // 保存原始数据
+})
 
 
 const loadStats = async () => {
@@ -527,11 +605,62 @@ const handleResize = () => {
   }
 }
 
+// 计算排名前10的设备
+const topDevices = computed(() => {
+  if (!deviceData.trend || deviceData.trend.length === 0) {
+    return []
+  }
+  
+  // 按访问人数排序，取前10
+  const sorted = [...deviceData.trend].sort((a, b) => (b.userCount || 0) - (a.userCount || 0))
+  return sorted.slice(0, 10)
+})
+
+// 获取排名样式类
+const getRankClass = (index) => {
+  if (index === 0) return 'rank-1'
+  if (index === 1) return 'rank-2'
+  if (index === 2) return 'rank-3'
+  return 'rank-normal'
+}
+
+// 计算百分比
+const getPercentage = (userCount) => {
+  if (!deviceData.totalUserCount || deviceData.totalUserCount === 0) {
+    return 0
+  }
+  return ((userCount || 0) / deviceData.totalUserCount) * 100
+}
+
+// 切换设备统计时间范围
+const changeDeviceTimeRange = async (days) => {
+  deviceSelectedDays.value = days
+  await loadDeviceStats(days)
+}
+
+// 加载设备统计数据
+const loadDeviceStats = async (days = 7) => {
+  try {
+    loadingDevice.value = true
+    const res = await getDeviceStats({ days })
+    if (res.code === 200) {
+      deviceData.totalUserCount = res.data.totalUserCount || 0
+      deviceData.rawTrend = res.data.trend || []
+      deviceData.trend = res.data.trend || []
+    }
+  } catch (e) {
+    console.error('加载设备统计失败', e)
+  } finally {
+    loadingDevice.value = false
+  }
+}
+
 onMounted(() => {
   loadStats()
   loadUserCount()
   loadRecentAnime()
   loadAccessStats()
+  loadDeviceStats() // 加载设备统计
   
   // 添加窗口resize事件监听
   window.addEventListener('resize', handleResize)
@@ -641,5 +770,126 @@ onUnmounted(() => {
   border-color: transparent;
   color: #fff;
   font-weight: 600;
+}
+
+/* 设备统计样式 */
+.device-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.device-model {
+  font-weight: 500;
+  color: #fff;
+}
+
+.os-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(124, 106, 247, 0.15);
+  border: 1px solid rgba(124, 106, 247, 0.3);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.user-count {
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.rank-1 {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.rank-2 {
+  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+  color: #000;
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.4);
+}
+
+.rank-3 {
+  background: linear-gradient(135deg, #cd7f32, #e6a57e);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.4);
+}
+
+.rank-normal {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--sub);
+}
+
+.percentage-bar {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.percentage-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.3s ease;
+  min-width: 2px;
+}
+
+.percentage-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.device-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  margin-top: 16px;
+  background: var(--bg3);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: var(--sub);
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
 }
 </style>
