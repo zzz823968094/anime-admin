@@ -154,4 +154,17 @@ export const getDeviceStats = (params = {}) => {
   return get('/api/anime/device/stats', params)
 }
 
+// 系统更新状态API（管理端专用）
+export const getSystemUpdateStatus = () => {
+  return get('/api/admin/system/update-status')
+}
+
+export const setSystemUpdateStatus = (data) => {
+  return post('/api/admin/system/update-status', data)
+}
+
+export const toggleSystemUpdate = () => {
+  return post('/api/admin/system/toggle-update')
+}
+
 export default api

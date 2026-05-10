@@ -4,6 +4,73 @@
       <div class="page-title">数据概览</div>
     </div>
 
+    <!-- 系统更新状态卡片 -->
+    <div class="card system-update-card">
+      <div class="update-header">
+        <div class="update-title">
+          <span class="update-icon">🔧</span>
+          <span>系统维护模式</span>
+        </div>
+        <div class="update-status-badge" :class="systemUpdate.updating ? 'status-on' : 'status-off'">
+          {{ systemUpdate.updating ? '维护中' : '正常运行' }}
+        </div>
+      </div>
+      <div class="update-content">
+        <div class="update-info">
+          <div class="info-item">
+            <span class="info-label">当前状态：</span>
+            <span class="info-value" :class="systemUpdate.updating ? 'text-warning' : 'text-success'">
+              {{ systemUpdate.updating ? '系统正在维护升级' : '系统正常运行' }}
+            </span>
+          </div>
+          <div class="info-item" v-if="systemUpdate.message">
+            <span class="info-label">提示信息：</span>
+            <span class="info-value text-sub">{{ systemUpdate.message }}</span>
+          </div>
+        </div>
+        <div class="update-actions">
+          <button 
+            class="btn-toggle" 
+            :class="systemUpdate.updating ? 'btn-resume' : 'btn-maintenance'"
+            @click="handleToggleUpdate"
+            :disabled="loadingUpdate"
+          >
+            {{ loadingUpdate ? '处理中...' : (systemUpdate.updating ? '恢复服务' : '开启维护') }}
+          </button>
+          <button 
+            class="btn-edit-message"
+            @click="showEditMessage = true"
+            :disabled="loadingUpdate"
+          >
+            编辑提示
+          </button>
+        </div>
+      </div>
+      <!-- 编辑提示信息对话框 -->
+      <div v-if="showEditMessage" class="modal-overlay" @click="showEditMessage = false">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>编辑维护提示信息</h3>
+            <button class="modal-close" @click="showEditMessage = false">×</button>
+          </div>
+          <div class="modal-body">
+            <textarea 
+              v-model="editMessage" 
+              placeholder="请输入维护提示信息..."
+              rows="4"
+              class="message-textarea"
+            ></textarea>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" @click="showEditMessage = false">取消</button>
+            <button class="btn-confirm" @click="handleUpdateMessage" :disabled="loadingUpdate">
+              {{ loadingUpdate ? '保存中...' : '保存' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-ic ic-purple">📺</div>
@@ -196,13 +263,22 @@
 <script setup>
 import {ref, reactive, onMounted, nextTick, onUnmounted, computed} from 'vue'
 import {useRouter} from 'vue-router'
-import {getAnimeStats, getUserCount, getAnimeList, getAccessStats, getDeviceStats} from '@/utils/api'
+import {getAnimeStats, getUserCount, getAnimeList, getAccessStats, getDeviceStats, getSystemUpdateStatus, setSystemUpdateStatus, toggleSystemUpdate} from '@/utils/api'
 import * as echarts from 'echarts'
 
 const router = useRouter()
 
 const TYPE_MAP = {'67': '🇯🇵 日韩', '68': '🌎 欧美', '66': '🇨🇳 中文'}
 const STATUS_MAP = {0: ['连载中', 'b-green'], 1: ['已完结', 'b-blue'], 2: ['已下线', 'b-red']}
+
+// 系统更新状态
+const systemUpdate = reactive({
+  updating: false,
+  message: ''
+})
+const loadingUpdate = ref(false)
+const showEditMessage = ref(false)
+const editMessage = ref('')
 
 const stats = reactive({
   totalAnime: '—',
@@ -655,12 +731,65 @@ const loadDeviceStats = async (days = 7) => {
   }
 }
 
+// 加载系统更新状态
+const loadSystemUpdateStatus = async () => {
+  try {
+    const res = await getSystemUpdateStatus()
+    if (res.code === 200) {
+      systemUpdate.updating = res.data.updating
+      systemUpdate.message = res.data.message || ''
+    }
+  } catch (e) {
+    console.error('加载系统更新状态失败', e)
+  }
+}
+
+// 切换系统更新状态
+const handleToggleUpdate = async () => {
+  try {
+    loadingUpdate.value = true
+    const res = await toggleSystemUpdate()
+    if (res.code === 200) {
+      // 重新加载状态
+      await loadSystemUpdateStatus()
+      alert(res.message || '操作成功')
+    }
+  } catch (e) {
+    console.error('切换系统更新状态失败', e)
+    alert('操作失败：' + (e.response?.data?.message || e.message))
+  } finally {
+    loadingUpdate.value = false
+  }
+}
+
+// 更新提示信息
+const handleUpdateMessage = async () => {
+  try {
+    loadingUpdate.value = true
+    const res = await setSystemUpdateStatus({
+      updating: systemUpdate.updating,
+      message: editMessage.value
+    })
+    if (res.code === 200) {
+      systemUpdate.message = editMessage.value
+      showEditMessage.value = false
+      alert('提示信息已更新')
+    }
+  } catch (e) {
+    console.error('更新提示信息失败', e)
+    alert('更新失败：' + (e.response?.data?.message || e.message))
+  } finally {
+    loadingUpdate.value = false
+  }
+}
+
 onMounted(() => {
   loadStats()
   loadUserCount()
   loadRecentAnime()
   loadAccessStats()
   loadDeviceStats() // 加载设备统计
+  loadSystemUpdateStatus() // 加载系统更新状态
   
   // 添加窗口resize事件监听
   window.addEventListener('resize', handleResize)
@@ -679,6 +808,295 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 系统更新状态卡片样式 */
+.system-update-card {
+  margin-bottom: 20px;
+  border: 2px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.system-update-card:has(.status-on) {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.update-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.update-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.update-icon {
+  font-size: 20px;
+}
+
+.update-status-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.update-status-badge.status-on {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #000;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.update-status-badge.status-off {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.update-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.update-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.info-item {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.info-label {
+  color: var(--sub);
+  margin-right: 8px;
+}
+
+.info-value {
+  color: #fff;
+  font-weight: 500;
+}
+
+.text-warning {
+  color: #f59e0b;
+}
+
+.text-success {
+  color: #10b981;
+}
+
+.text-sub {
+  color: var(--sub);
+}
+
+.update-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-toggle,
+.btn-edit-message {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.btn-toggle:disabled,
+.btn-edit-message:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-maintenance {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-maintenance:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.btn-resume {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-resume:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-edit-message {
+  background: var(--bg3);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.btn-edit-message:hover:not(:disabled) {
+  background: rgba(124, 106, 247, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--sub);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--bg3);
+  color: #fff;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.message-textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.message-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-cancel,
+.btn-confirm {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: var(--bg3);
+  color: var(--sub);
+  border: 1px solid var(--border);
+}
+
+.btn-cancel:hover {
+  background: var(--border);
+  color: #fff;
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 106, 247, 0.4);
+}
+
+.btn-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .type-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
