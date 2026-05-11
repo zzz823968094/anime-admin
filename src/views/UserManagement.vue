@@ -1,12 +1,5 @@
 <template>
   <div class="user-management">
-    <div class="page-header">
-      <h2 class="page-title">用户管理</h2>
-      <button class="btn btn-primary" @click="handleAdd">
-        <span class="btn-icon">+</span> 新增用户
-      </button>
-    </div>
-
     <!-- 搜索栏 -->
     <div class="search-bar">
       <input
@@ -22,11 +15,19 @@
         <option value="DISABLE">禁用</option>
       </select>
       <button class="btn btn-primary" @click="handleSearch">搜索</button>
-      <button class="btn btn-secondary" @click="handleReset">重置</button>
+      <button class="btn btn-ghost" @click="handleReset">重置</button>
+      <button class="btn btn-primary btn-sm" @click="handleAdd">
+        <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        新增用户
+      </button>
     </div>
 
-    <!-- 表格 -->
+    <!-- 表格容器 -->
     <div class="table-container">
+      <!-- 表格右上角操作区 -->
+      <div class="table-actions">
+      </div>
+
       <table class="data-table">
         <thead>
           <tr>
@@ -58,15 +59,23 @@
             </td>
             <td>{{ formatDate(user.createTime) }}</td>
             <td class="actions">
-              <button class="btn btn-ghost btn-sm" @click="handleEdit(user)">编辑</button>
+              <button class="btn btn-ghost btn-sm" @click="handleEdit(user)">
+                <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                编辑
+              </button>
               <button
                 class="btn btn-sm"
                 :class="user.status === 'NORMAL' ? 'btn-warning' : 'btn-success'"
                 @click="handleToggleStatus(user)"
               >
+                <svg v-if="user.status === 'NORMAL'" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                <svg v-else style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
                 {{ user.status === 'NORMAL' ? '禁用' : '启用' }}
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(user)">删除</button>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(user)">
+                <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                删除
+              </button>
             </td>
           </tr>
         </tbody>
@@ -352,21 +361,7 @@ onMounted(() => {
 
 <style scoped>
 .user-management {
-  padding: 24px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
+  padding: 32px;
 }
 
 .search-bar {
@@ -376,23 +371,20 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
-.search-input {
-  flex: 1;
-  min-width: 200px;
-  max-width: 300px;
-}
-
-.search-select {
-  padding: 10px 14px;
-  font-size: 14px;
-  min-width: 150px;
-}
-
 .table-container {
-  background: var(--bg2);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   overflow: hidden;
+  position: relative;
+}
+
+/* 表格右上角操作区 */
+.table-actions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
 }
 
 .data-table {
@@ -401,7 +393,7 @@ onMounted(() => {
 }
 
 .data-table thead {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg);               /* 浅灰表头背景 */
 }
 
 .data-table th {
@@ -409,16 +401,15 @@ onMounted(() => {
   text-align: left;
   font-size: 13px;
   font-weight: 600;
-  color: var(--sub);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--secondary);             /* 次要文字 #86868b */
+  letter-spacing: -0.1px;
   border-bottom: 1px solid var(--border);
 }
 
 .data-table td {
   padding: 14px 16px;
-  font-size: 14px;
-  color: var(--text);
+  font-size: 15px;                     /* 统一字体大小 */
+  color: var(--text);                  /* 主文字 #1d1d1f */
   border-bottom: 1px solid var(--border);
 }
 
@@ -427,14 +418,14 @@ onMounted(() => {
 }
 
 .data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.02);     /* 悬停效果 */
 }
 
 .loading-cell,
 .empty-cell {
   text-align: center;
   padding: 40px 16px;
-  color: var(--sub);
+  color: var(--secondary);             /* 次要文字 */
 }
 
 .actions {
@@ -445,19 +436,19 @@ onMounted(() => {
 .status-tag {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: 8px;                  /* 8px 圆角 */
   font-size: 12px;
   font-weight: 500;
 }
 
 .status-normal {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  background: rgba(52, 199, 89, 0.12); 
+  color: var(--success);               /* 成功绿 #34c759 */
 }
 
 .status-disabled {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: rgba(255, 59, 48, 0.12); 
+  color: var(--danger);                /* 危险红 #ff3b30 */
 }
 
 .pagination {
@@ -470,7 +461,7 @@ onMounted(() => {
 
 .page-info {
   font-size: 14px;
-  color: var(--sub);
+  color: var(--secondary);             /* 次要文字 */
 }
 
 .page-size-select {
@@ -478,66 +469,70 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* 弹窗样式 */
+/* 弹窗样式 - Apple 风格 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.3);      /* 弱化遮罩 */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(10px);         /* 毛玻璃效果 */
 }
 
 .modal {
-  background: var(--bg2);
+  background: var(--card);             /* 白色背景 */
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 28px;                 /* 28px 圆角 */
   width: 90%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);  /* 柔和阴影 */
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 24px 28px;                  /* 加大内边距 */
   border-bottom: 1px solid var(--border);
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text);                  /* 主文字 #1d1d1f */
   margin: 0;
+  letter-spacing: -0.2px;
 }
 
 .modal-close {
   width: 32px;
   height: 32px;
   border: none;
-  background: transparent;
-  color: var(--sub);
-  font-size: 24px;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--secondary);             /* 次要文字 #86868b */
+  font-size: 20px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 50%;                  /* 圆形 */
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text);                  /* 主文字 #1d1d1f */
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 28px;                       /* 加大内边距 */
 }
 
 .form {
@@ -572,15 +567,58 @@ onMounted(() => {
 }
 
 .error-msg {
-  color: #f87171;
+  color: var(--danger);                /* 危险色 #ff3b30 */
   font-size: 13px;
   padding: 8px;
-  background: rgba(248, 113, 113, 0.1);
+  background: rgba(255, 59, 48, 0.12);
   border-radius: 8px;
 }
 
 .btn-icon {
   font-size: 16px;
   margin-right: 4px;
+}
+
+/* 表格操作按钮样式 - Apple 风格 */
+.btn-warning {
+  background: rgba(255, 149, 0, 0.1);
+  color: var(--warning);               /* 警告橙 #ff9500 */
+}
+
+.btn-warning:hover {
+  background: rgba(255, 149, 0, 0.2);
+  color: var(--accent);                /* hover 时文字变蓝 */
+}
+
+.btn-warning:hover svg {
+  stroke: var(--accent);               /* hover 时图标变蓝 */
+}
+
+.btn-success {
+  background: rgba(52, 199, 89, 0.1);
+  color: var(--success);               /* 成功绿 #34c759 */
+}
+
+.btn-success:hover {
+  background: rgba(52, 199, 89, 0.2);
+  color: var(--accent);                /* hover 时文字变蓝 */
+}
+
+.btn-success:hover svg {
+  stroke: var(--accent);               /* hover 时图标变蓝 */
+}
+
+.btn-danger {
+  background: rgba(255, 59, 48, 0.1);
+  color: var(--danger);                /* 危险红 #ff3b30 */
+}
+
+.btn-danger:hover {
+  background: rgba(255, 59, 48, 0.2);
+  color: var(--accent);                /* hover 时文字变蓝 */
+}
+
+.btn-danger:hover svg {
+  stroke: var(--accent);               /* hover 时图标变蓝 */
 }
 </style>

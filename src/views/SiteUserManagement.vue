@@ -1,15 +1,5 @@
 <template>
   <div>
-    <div class="page-hd">
-      <div class="page-title">网站用户管理</div>
-      <div class="page-stats">
-        <span class="stat-item">
-          <span class="stat-label">总用户数</span>
-          <span class="stat-value">{{ totalCount }}</span>
-        </span>
-      </div>
-    </div>
-
     <!-- 搜索栏 -->
     <div class="card">
       <div class="search-bar">
@@ -427,7 +417,7 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: var(--accent);           /* 纯色，禁止渐变 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -479,15 +469,15 @@ onMounted(() => {
 }
 
 .pg-btn {
-  background: var(--bg3);
+  background: var(--card);
   border: 1px solid var(--border);
-  color: var(--sub);
-  padding: 5px 11px;
-  border-radius: 6px;
+  color: var(--secondary);
+  padding: 6px 12px;
+  border-radius: 8px;                  /* 8px 圆角 */
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-family: inherit;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 .pg-btn:hover:not(:disabled) {
@@ -501,13 +491,13 @@ onMounted(() => {
 }
 
 .pg-info {
-  font-size: 12px;
-  color: var(--sub);
+  font-size: 13px;
+  color: var(--secondary);
 }
 
 .pg-size-select {
-  padding: 5px 8px;
-  font-size: 12px;
+  padding: 6px 8px;
+  font-size: 13px;
   margin-left: 8px;
 }
 
@@ -517,10 +507,10 @@ onMounted(() => {
   top: 20px;
   right: 20px;
   padding: 15px 20px;
-  background: var(--bg2);
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;                 /* 12px 圆角 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* 规范轻阴影 */
   z-index: 2000;
   animation: slideIn 0.3s ease;
   font-weight: 500;
@@ -529,11 +519,11 @@ onMounted(() => {
 }
 
 .toast.success {
-  border-left: 4px solid #4ade80;
+  border-left: 4px solid var(--success);  /* 成功 #34c759 */
 }
 
 .toast.error {
-  border-left: 4px solid #f87171;
+  border-left: 4px solid var(--danger);   /* 危险 #ff3b30 */
 }
 
 @keyframes slideIn {

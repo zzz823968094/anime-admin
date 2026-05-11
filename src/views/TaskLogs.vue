@@ -1,9 +1,5 @@
 <template>
   <div>
-    <div class="page-hd">
-      <div class="page-title">任务执行记录</div>
-    </div>
-
     <!-- 筛选栏 -->
     <div class="card">
       <div class="filter-bar">

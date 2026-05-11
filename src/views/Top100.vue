@@ -1,10 +1,5 @@
 <template>
   <div>
-    <div class="page-hd">
-      <div class="page-title">🏆 播放量排行 TOP 100</div>
-      <button class="btn btn-ghost" @click="loadTop100">🔄 刷新</button>
-    </div>
-
     <div class="card">
       <table class="tbl">
         <thead>

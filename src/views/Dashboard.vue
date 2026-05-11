@@ -1,36 +1,32 @@
 <template>
-  <div>
-    <div class="page-hd">
-      <div class="page-title">数据概览</div>
-    </div>
-
+  <div class="dashboard-content">
     <!-- 系统更新状态卡片 -->
     <div class="card system-update-card">
       <div class="update-header">
-        <div class="update-title">
-          <span class="update-icon">🔧</span>
+        <div class="update-title sec-title">
+          <svg class="update-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
           <span>系统维护模式</span>
         </div>
-        <div class="update-status-badge" :class="systemUpdate.updating ? 'status-on' : 'status-off'">
+        <div class="update-status-badge caption" :class="systemUpdate.updating ? 'status-on' : 'status-off'">
           {{ systemUpdate.updating ? '维护中' : '正常运行' }}
         </div>
       </div>
       <div class="update-content">
         <div class="update-info">
-          <div class="info-item">
-            <span class="info-label">当前状态：</span>
-            <span class="info-value" :class="systemUpdate.updating ? 'text-warning' : 'text-success'">
+          <div class="info-item body-text">
+            <span class="info-label caption">当前状态：</span>
+            <span class="info-value body-text" :class="systemUpdate.updating ? 'text-warning' : 'text-success'">
               {{ systemUpdate.updating ? '系统正在维护升级' : '系统正常运行' }}
             </span>
           </div>
-          <div class="info-item" v-if="systemUpdate.message">
-            <span class="info-label">提示信息：</span>
-            <span class="info-value text-sub">{{ systemUpdate.message }}</span>
+          <div class="info-item body-text" v-if="systemUpdate.message">
+            <span class="info-label caption">提示信息：</span>
+            <span class="info-value text-sub caption">{{ systemUpdate.message }}</span>
           </div>
         </div>
         <div class="update-actions">
           <button 
-            class="btn-toggle" 
+            class="btn btn-primary" 
             :class="systemUpdate.updating ? 'btn-resume' : 'btn-maintenance'"
             @click="handleToggleUpdate"
             :disabled="loadingUpdate"
@@ -38,7 +34,7 @@
             {{ loadingUpdate ? '处理中...' : (systemUpdate.updating ? '恢复服务' : '开启维护') }}
           </button>
           <button 
-            class="btn-edit-message"
+            class="btn btn-ghost"
             @click="showEditMessage = true"
             :disabled="loadingUpdate"
           >
@@ -73,31 +69,31 @@
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-ic ic-purple">📺</div>
+        <svg class="stat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
         <div>
-          <div class="stat-val">{{ stats.totalAnime || '0' }}</div>
-          <div class="stat-lbl">番剧总数</div>
+          <div class="stat-val display-hero">{{ stats.totalAnime || '0' }}</div>
+          <div class="stat-lbl caption">番剧总数</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-ic ic-green">👥</div>
+        <svg class="stat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <div>
-          <div class="stat-val">{{ stats.totalUser || '0' }}</div>
-          <div class="stat-lbl">注册用户</div>
+          <div class="stat-val display-hero">{{ stats.totalUser || '0' }}</div>
+          <div class="stat-lbl caption">注册用户</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-ic ic-orange">今日</div>
+        <svg class="stat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
         <div>
-          <div class="stat-val">{{ stats.todayView || '0' }}</div>
-          <div class="stat-lbl">今日播放量</div>
+          <div class="stat-val display-hero">{{ stats.todayView || '0' }}</div>
+          <div class="stat-lbl caption">今日播放量</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-ic ic-orange">ALL</div>
+        <svg class="stat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
         <div>
-          <div class="stat-val">{{ stats.totalView || '0' }}</div>
-          <div class="stat-lbl">总播放量</div>
+          <div class="stat-val display-hero">{{ stats.totalView || '0' }}</div>
+          <div class="stat-lbl caption">总播放量</div>
         </div>
       </div>
     </div>
@@ -105,37 +101,37 @@
     <div class="stats-grid">
 
       <div class="stat-card">
-        <div class="stat-ic ic-purple">📱</div>
+        <svg class="stat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
         <div>
-          <div class="stat-val">{{ accessData.todayAppUV || '—' }}</div>
-          <div class="stat-lbl">今日App访问人数</div>
+          <div class="stat-val display-hero">{{ accessData.todayAppUV || '—' }}</div>
+          <div class="stat-lbl caption">今日App访问人数</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-ic ic-purple">🖥️</div>
+        <svg class="stat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
         <div>
-          <div class="stat-val">{{ accessData.todayWebUV === null ? '—' : accessData.todayWebUV }}</div>
-          <div class="stat-lbl">今日Web访问人数</div>
+          <div class="stat-val display-hero">{{ accessData.todayWebUV === null ? '—' : accessData.todayWebUV }}</div>
+          <div class="stat-lbl caption">今日Web访问人数</div>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-ic ic-purple">ALL</div>
+        <svg class="stat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <div>
-          <div class="stat-val">{{ accessData.totalUserCount || '—' }}</div>
-          <div class="stat-lbl">(总)访问人数</div>
+          <div class="stat-val display-hero">{{ accessData.totalUserCount || '—' }}</div>
+          <div class="stat-lbl caption">(总)访问人数</div>
         </div>
       </div>
     </div>
     <!-- 七天日活折线图 -->
     <div class="card">
       <div class="chart-header">
-        <div class="sec-title">日活趋势</div>
+        <h2 class="sec-title tile-heading">日活趋势</h2>
         <div class="chart-controls">
           <button
               v-for="days in [7, 30, 90, 180]"
               :key="days"
-              :class="['time-btn', { active: selectedDays === days }]"
+              :class="['btn btn-filter caption', { active: selectedDays === days }]"
               @click="changeTimeRange(days)"
           >
             {{ days }}天
@@ -149,12 +145,17 @@
 
     <!-- 分类统计 -->
     <div class="card">
-      <div class="sec-title">分类统计</div>
+      <h2 class="sec-title tile-heading">分类统计</h2>
       <div class="type-stats-grid">
-        <div v-for="type in typeStats" :key="type.label" class="type-stat-card">
-          <div class="type-icon">{{ type.icon }}</div>
-          <div class="type-count">{{ type.count }}</div>
-          <div class="type-label">{{ type.label }}</div>
+        <div v-for="item in typeStats" :key="item.label" class="type-stat-card">
+          <div class="type-icon">
+            <svg v-if="item.type === 'jp'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"></path></svg>
+            <svg v-else-if="item.type === 'us'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <svg v-else-if="item.type === 'cn'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <svg v-else-if="item.type === 'all'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </div>
+          <div class="type-count display-hero">{{ item.count }}</div>
+          <div class="type-label caption">{{ item.label }}</div>
         </div>
       </div>
     </div>
@@ -162,12 +163,15 @@
     <!-- 设备统计排名 -->
     <div class="card">
       <div class="chart-header">
-        <div class="sec-title">📱 设备型号统计排名</div>
+        <h2 class="sec-title tile-heading">
+          <svg style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+          设备型号统计排名
+        </h2>
         <div class="chart-controls">
           <button
               v-for="days in [7, 30, 90]"
               :key="days"
-              :class="['time-btn', { active: deviceSelectedDays === days }]"
+              :class="['btn btn-filter caption', { active: deviceSelectedDays === days }]"
               @click="changeDeviceTimeRange(days)"
           >
             {{ days }}天
@@ -230,29 +234,29 @@
 
     <!-- 最新入库番剧 -->
     <div class="card">
-      <div class="sec-title">最新入库番剧</div>
+      <h2 class="sec-title tile-heading">最新入库番剧</h2>
       <table class="tbl">
         <thead>
         <tr>
-          <th>ID</th>
-          <th>标题</th>
-          <th>分类</th>
-          <th>集数</th>
-          <th>入库时间</th>
+          <th class="caption">ID</th>
+          <th class="caption">标题</th>
+          <th class="caption">分类</th>
+          <th class="caption">集数</th>
+          <th class="caption">入库时间</th>
         </tr>
         </thead>
         <tbody>
         <tr v-if="recentAnime.length === 0">
-          <td colspan="6" style="text-align:center;padding:30px;color:var(--sub)">加载中…</td>
+          <td colspan="6" style="text-align:center;padding:30px;color:var(--sub)" class="body-text">加载中…</td>
         </tr>
         <tr v-for="anime in recentAnime" :key="anime.id">
-          <td style="color:var(--sub)">{{ anime.id }}</td>
-          <td>
+          <td style="color:var(--sub)" class="caption">{{ anime.id }}</td>
+          <td class="body-text">
             {{ anime.vodName }}
           </td>
-          <td>{{ TYPE_MAP[anime.typeId] || anime.typeId || '—' }}</td>
-          <td>第 {{ anime.vodTotal }} 集</td>
-          <td style="color:var(--sub)">{{ (anime.createAt || '').slice(0, 10) }}</td>
+          <td class="body-text">{{ TYPE_MAP[anime.typeId] || anime.typeId || '—' }}</td>
+          <td class="body-text">第 {{ anime.vodTotal }} 集</td>
+          <td style="color:var(--sub)" class="caption">{{ (anime.createAt || '').slice(0, 10) }}</td>
         </tr>
         </tbody>
       </table>
@@ -322,10 +326,10 @@ const loadStats = async () => {
     stats.totalView = (s.totalView || 0).toLocaleString()
     stats.todayView = (s.todayView || 0).toLocaleString()
     typeStats.value = [
-      {icon: '🇯🇵', label: '日韩动漫', count: (s.jpCount || 0).toLocaleString()},
-      {icon: '🌎', label: '欧美动漫', count: (s.usCount || 0).toLocaleString()},
-      {icon: '🇨🇳', label: '中文动漫', count: (s.cnCount || 0).toLocaleString()},
-      {icon: '📊', label: '全部', count: (s.totalAnime || 0).toLocaleString()}
+      {type: 'jp', label: '日韩动漫', count: (s.jpCount || 0).toLocaleString()},
+      {type: 'us', label: '欧美动漫', count: (s.usCount || 0).toLocaleString()},
+      {type: 'cn', label: '中文动漫', count: (s.cnCount || 0).toLocaleString()},
+      {type: 'all', label: '全部', count: (s.totalAnime || 0).toLocaleString()}
     ]
   } catch (e) {
     console.error('加载统计失败', e)
@@ -804,58 +808,86 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 系统更新状态卡片样式 */
-.system-update-card {
+/* 图表头部和时间选择器 */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
-  border: 2px solid var(--border);
-  transition: all 0.3s ease;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
-.system-update-card:has(.status-on) {
-  border-color: #f59e0b;
-  background: rgba(245, 158, 11, 0.05);
+.chart-controls {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.btn-filter.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+.chart-container {
+  width: 100%;
+  height: 320px;
+  position: relative;
+}
+
+.dashboard-content {
+  /* 容器样式，确保与全局 .main 的内边距协调 */
+}
+
+/* 系统更新状态卡片样式 - Apple 浅色风格 */
+.system-update-card {
+  margin-bottom: 24px;
+  background: var(--card);               /* 白色背景 #ffffff */
+  color: var(--text);                    /* 主文字 #1d1d1f */
+  border-radius: 12px;                   /* 12px 圆角 */
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);  /* 极轻阴影 */
+  border: 1px solid var(--border);       /* 细边框 */
 }
 
 .update-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);  /* 使用标准边框色 */
 }
 
 .update-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: 12px;
+  color: var(--text);                    /* 主文字 #1d1d1f */
+  font-size: 18px;
   font-weight: 600;
-  color: #fff;
 }
 
 .update-icon {
-  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
 }
 
 .update-status-badge {
   padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  border-radius: 8px;                    /* 8px 圆角 */
+  font-weight: 500;
 }
 
 .update-status-badge.status-on {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
-  color: #000;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  background: rgba(255, 149, 0, 0.12);   /* 警告色背景 */
+  color: var(--warning);                 /* 警告 #ff9500 */
 }
 
 .update-status-badge.status-off {
-  background: linear-gradient(135deg, #10b981, #34d399);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  background: rgba(52, 199, 89, 0.12);   /* 成功色背景 */
+  color: var(--success);                 /* 成功 #34c759 */
 }
 
 .update-content {
@@ -872,144 +904,101 @@ onUnmounted(() => {
 }
 
 .info-item {
-  margin-bottom: 10px;
-  font-size: 14px;
+  margin-bottom: 12px;
+  color: var(--text);                    /* 主文字 #1d1d1f */
 }
 
 .info-label {
-  color: var(--sub);
+  color: var(--secondary);               /* 次要文字 #86868b */
   margin-right: 8px;
 }
 
 .info-value {
-  color: #fff;
+  color: var(--text);                    /* 主文字 #1d1d1f */
   font-weight: 500;
 }
 
 .text-warning {
-  color: #f59e0b;
+  color: var(--warning);                 /* 警告 #ff9500 */
 }
 
 .text-success {
-  color: #10b981;
+  color: var(--success);                 /* 成功 #34c759 */
 }
 
 .text-sub {
-  color: var(--sub);
+  color: var(--secondary);               /* 次要文字 #86868b */
 }
 
 .update-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.btn-toggle,
-.btn-edit-message {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 100px;
-}
-
-.btn-toggle:disabled,
-.btn-edit-message:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-maintenance {
-  background: linear-gradient(135deg, #ef4444, #f87171);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-}
-
-.btn-maintenance:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-}
-
 .btn-resume {
-  background: linear-gradient(135deg, #10b981, #34d399);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  background: var(--success);            /* 成功色 #34c759 */
+  color: #ffffff;
 }
 
 .btn-resume:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  background: #2db84e;                   /* 稍深绿色 */
 }
 
-.btn-edit-message {
-  background: var(--bg3);
-  color: var(--accent);
-  border: 1px solid var(--accent);
+.btn-maintenance {
+  background: var(--accent);             /* 苹果蓝 #0071e3 */
+  color: #ffffff;
 }
 
-.btn-edit-message:hover:not(:disabled) {
-  background: rgba(124, 106, 247, 0.1);
-  transform: translateY(-2px);
+.btn-maintenance:hover:not(:disabled) {
+  background: #0077ed;                   /* 稍深蓝色 */
 }
 
-/* 模态框样式 */
+/* 模态框样式 - Apple 风格 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.3);        /* 弱化遮罩 */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);           /* 毛玻璃效果 */
 }
 
 .modal-content {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--card);               /* 白色背景 */
+  border: 1px solid var(--border);       /* 细边框 */
+  border-radius: 28px;                   /* 28px 圆角 */
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);  /* 柔和阴影 */
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 24px 28px;                    /* 加大内边距 */
   border-bottom: 1px solid var(--border);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 18px;
-  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);                    /* 主文字 #1d1d1f */
+  letter-spacing: -0.2px;
 }
 
 .modal-close {
-  background: none;
+  background: rgba(0, 0, 0, 0.06);
   border: none;
-  color: var(--sub);
-  font-size: 28px;
+  color: var(--secondary);               /* 次要文字 #86868b */
+  font-size: 20px;
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -1017,42 +1006,48 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 50%;
   transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background: var(--bg3);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text);
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 28px;                         /* 加大内边距 */
 }
 
 .message-textarea {
   width: 100%;
-  padding: 12px;
-  background: var(--bg3);
+  padding: 12px 14px;
+  background: var(--bg);                 /* 浅灰背景 #f5f5f7 */
   border: 1px solid var(--border);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
+  border-radius: 8px;                    /* 8px 圆角 */
+  color: var(--text);                    /* 主文字 #1d1d1f */
+  font-size: 15px;
   resize: vertical;
   font-family: inherit;
   transition: border-color 0.2s;
+  line-height: 1.47;
 }
 
 .message-textarea:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--accent);           /* 聚焦高亮苹果蓝 */
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.08);
+}
+
+.message-textarea::placeholder {
+  color: var(--secondary);               /* 占位符文字 #86868b */
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 20px;
+  gap: 12px;
+  padding: 20px 28px;                    /* 加大内边距 */
   border-top: 1px solid var(--border);
 }
 
@@ -1060,32 +1055,30 @@ onUnmounted(() => {
 .btn-confirm {
   padding: 10px 20px;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 8px;                    /* 8px 圆角 */
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
 .btn-cancel {
-  background: var(--bg3);
-  color: var(--sub);
-  border: 1px solid var(--border);
+  background: #f5f5f7;                   /* 次按钮背景 */
+  color: var(--text);                    /* 主文字 #1d1d1f */
 }
 
 .btn-cancel:hover {
-  background: var(--border);
-  color: #fff;
+  background: #e8e8ed;
 }
 
 .btn-confirm {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
+  background: var(--accent);             /* 主按钮 #0071e3 */
+  color: #ffffff;
 }
 
 .btn-confirm:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(124, 106, 247, 0.4);
+  background: #0077ed;
 }
 
 .btn-confirm:disabled {
@@ -1095,215 +1088,213 @@ onUnmounted(() => {
 
 .type-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr); /* 大屏默认 4 列 */
+  gap: 20px;
+}
+
+/* 响应式适配 - Apple 管理端规范 */
+@media (max-width: 1199px) {
+  .stats-grid,
+  .type-stats-grid {
+    grid-template-columns: repeat(3, 1fr); /* 中屏 3 列 */
+  }
+}
+
+@media (max-width: 833px) {
+  .stats-grid,
+  .type-stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* 平板 2 列 */
+  }
+}
+
+@media (max-width: 639px) {
+  .stats-grid,
+  .type-stats-grid {
+    grid-template-columns: 1fr; /* 移动端单列 */
+  }
 }
 
 .type-stat-card {
-  background: var(--bg3);
+  background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
+  border-radius: 12px;                 /* Apple 规范 12px 圆角 */
+  padding: 28px;                       /* 加大内边距 */
   text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* Apple 风格轻微阴影 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.type-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
 .type-icon {
-  font-size: 20px;
-  margin-bottom: 6px;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto 12px;
+  stroke: #1d1d1f;                     /* 常规状态主色 #1d1d1f */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.type-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .type-count {
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);                  /* 主文字 #1d1d1f */
+  letter-spacing: -0.2px;
+  line-height: 1.1;
 }
 
 .type-label {
-  font-size: 11px;
-  color: var(--sub);
-  margin-top: 2px;
+  font-size: 13px;
+  color: var(--secondary);             /* 次要文字 #86868b */
+  margin-top: 8px;
 }
 
 .anime-link {
-  color: var(--accent2);
+  color: var(--apple-blue);
   text-decoration: none;
   cursor: pointer;
+  transition: color 0.2s;
 }
 
 .anime-link:hover {
+  color: #0077ed;
   text-decoration: underline;
 }
 
 .loading-text {
-  color: var(--sub);
-  font-size: 13px;
+  color: var(--secondary);             /* 次要文字 #86868b */
+  font-size: 15px;
   text-align: center;
   align-self: center;
+  padding: 40px 0;
 }
 
-.chart-container {
-  width: 100%;
-  height: 350px;
-  position: relative;
-  padding: 10px 0;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.chart-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.time-btn {
-  padding: 6px 14px;
-  border: 1px solid var(--border);
-  background: var(--bg3);
-  color: var(--sub);
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.time-btn:hover {
-  background: rgba(124, 106, 247, 0.1);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.time-btn.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border-color: transparent;
-  color: #fff;
-  font-weight: 600;
-}
-
-/* 设备统计样式 */
-.device-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.device-model {
-  font-weight: 500;
-  color: #fff;
-}
-
-.os-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  background: rgba(124, 106, 247, 0.15);
-  border: 1px solid rgba(124, 106, 247, 0.3);
-  border-radius: 4px;
-  font-size: 12px;
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.user-count {
-  font-weight: 600;
-  color: #fff;
-  font-size: 14px;
-}
-
+/* 排名徽章样式 - 禁止渐变背景 */
 .rank-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  font-weight: 700;
+  border-radius: 8px;                  /* 8px 圆角 */
   font-size: 13px;
+  font-weight: 600;
 }
 
 .rank-1 {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: #000;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+  background: rgba(245, 158, 11, 0.2);  /* 金色 */
+  color: var(--gold);
 }
 
 .rank-2 {
-  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-  color: #000;
-  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.4);
+  background: rgba(156, 163, 175, 0.2);  /* 银色 */
+  color: #9ca3af;
 }
 
 .rank-3 {
-  background: linear-gradient(135deg, #cd7f32, #e6a57e);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.4);
+  background: rgba(180, 120, 60, 0.2);   /* 铜色 */
+  color: #b4783c;
 }
 
 .rank-normal {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  color: var(--sub);
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--secondary);
+}
+
+/* 设备信息样式 */
+.device-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.device-model {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.os-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;                  /* 8px 圆角 */
+  font-size: 12px;
+  color: var(--secondary);             /* 次要文字 #86868b */
+  font-weight: 500;
+}
+
+.user-count {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .percentage-bar {
   position: relative;
-  width: 100%;
-  height: 24px;
-  background: var(--bg3);
+  height: 8px;
+  background: rgba(0, 0, 0, 0.06);
   border-radius: 4px;
   overflow: hidden;
-  border: 1px solid var(--border);
 }
 
 .percentage-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  transition: width 0.3s ease;
-  min-width: 2px;
+  background: var(--accent);           /* 禁止渐变，使用纯色 */
+  border-radius: 4px;
+  transition: width 0.6s ease;
 }
 
 .percentage-text {
   position: absolute;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  right: 8px;
+  transform: translateY(-50%);
   font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  z-index: 1;
+  color: var(--secondary);
+  font-weight: 500;
 }
 
 .device-summary {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
+  gap: 24px;
   margin-top: 16px;
-  background: var(--bg3);
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .summary-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  font-size: 14px;
 }
 
 .summary-label {
-  font-size: 13px;
-  color: var(--sub);
+  color: var(--secondary);
 }
 
 .summary-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent);
+  font-weight: 600;
+  color: var(--text);
 }
+
+.chart-container {
+  width: 100%;
+  height: 320px;
+  position: relative;
+}
+
+
 </style>

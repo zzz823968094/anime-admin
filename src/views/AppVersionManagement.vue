@@ -1,11 +1,5 @@
 <template>
   <div class="app-version">
-    <div class="page-header">
-      <h2 class="page-title">App 版本管理</h2>
-      <button class="btn btn-primary" @click="handleAdd">
-        <span class="btn-icon">+</span> 新增版本
-      </button>
-    </div>
 
     <div class="search-bar">
       <select v-model="searchForm.platform" class="ctrl search-select" @change="handleSearch">
@@ -21,6 +15,10 @@
       </select>
       <button class="btn btn-primary" @click="handleSearch">搜索</button>
       <button class="btn btn-secondary" @click="handleReset">重置</button>
+
+      <button class="btn btn-primary" @click="handleAdd">
+        <span class="btn-icon">+</span> 新增版本
+      </button>
     </div>
 
     <div class="table-container">
@@ -421,7 +419,7 @@ onMounted(fetchList)
 .platform-tag {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: 8px;                  /* 8px 圆角 */
   font-size: 12px;
   font-weight: 500;
 }
@@ -432,7 +430,7 @@ onMounted(fetchList)
 .force-tag {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: 8px;                  /* 8px 圆角 */
   font-size: 12px;
   font-weight: 500;
 }
@@ -470,9 +468,9 @@ onMounted(fetchList)
   z-index: 1000;
 }
 .modal {
-  background: var(--bg2);
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 28px;                 /* 28px 圆角 */
   width: 90%;
   max-width: 560px;
   max-height: 90vh;
@@ -485,7 +483,7 @@ onMounted(fetchList)
   padding: 20px 24px;
   border-bottom: 1px solid var(--border);
 }
-.modal-title { font-size: 18px; font-weight: 600; color: #fff; margin: 0; }
+.modal-title { font-size: 18px; font-weight: 600; color: var(--text); margin: 0; }
 .modal-close {
   width: 32px; height: 32px;
   border: none; background: transparent; color: var(--sub);

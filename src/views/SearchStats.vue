@@ -1,10 +1,5 @@
 <template>
   <div>
-    <div class="page-hd">
-      <div class="page-title">🔍 搜索统计</div>
-      <button class="btn btn-ghost" @click="loadSearchStats">🔄 刷新</button>
-    </div>
-
     <div class="stats-grid-2">
       <!-- 热门搜索词 -->
       <div class="card">
@@ -150,14 +145,14 @@ onMounted(() => {
 .keyword-bar {
   width: 80px;
   height: 4px;
-  background: var(--bg3);
+  background: var(--bg);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .keyword-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  background: var(--accent);           /* 纯色，禁止渐变 */
   border-radius: 2px;
 }
 
@@ -175,20 +170,22 @@ onMounted(() => {
 }
 
 .overview-card {
-  background: var(--bg3);
-  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;                 /* 12px 圆角 */
   padding: 16px;
   text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .overview-value {
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
 }
 
 .overview-value.accent {
-  color: var(--accent2);
+  color: var(--accent);
 }
 
 .overview-label {

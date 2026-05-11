@@ -1,11 +1,5 @@
 <template>
   <div class="carousel-management">
-    <div class="page-header">
-      <h2 class="page-title">轮播图管理</h2>
-      <button class="btn btn-primary" @click="handleAdd">
-        <span class="btn-icon">+</span> 新增轮播图
-      </button>
-    </div>
 
     <div class="search-bar">
       <select v-model="searchForm.type" class="ctrl search-select" @change="handleSearch">
@@ -20,6 +14,11 @@
       </select>
       <button class="btn btn-primary" @click="handleSearch">搜索</button>
       <button class="btn btn-secondary" @click="handleReset">重置</button>
+
+
+      <button class="btn btn-primary" @click="handleAdd">
+        <span class="btn-icon">+</span> 新增轮播图
+      </button>
     </div>
 
     <div class="table-container">
@@ -385,20 +384,22 @@ onMounted(fetchList)
 </script>
 
 <style scoped>
-.carousel-management { padding: 24px; }
+.carousel-management { padding: 32px; }              /* 加大内边距 */
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;                 /* 加大底部间距 */
 }
 
 .page-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size: 24px;                     /* 统一标题大小 */
+  font-weight: 600;                    /* 统一字重 */
+  color: var(--text);                  /* 主文字 #1d1d1f - 清晰可见 */
   margin: 0;
+  letter-spacing: -0.2px;
 }
 
 .search-bar {
@@ -411,33 +412,32 @@ onMounted(fetchList)
 .search-select { min-width: 130px; }
 
 .table-container {
-  background: var(--bg2);
+  background: var(--card);             /* 白色背景 */
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
 }
 
 .data-table { width: 100%; border-collapse: collapse; }
-.data-table thead { background: rgba(255,255,255,0.05); }
+.data-table thead { background: var(--bg); }  /* 浅灰表头背景 */
 .data-table th {
   padding: 14px 16px;
   text-align: left;
   font-size: 13px;
   font-weight: 600;
-  color: var(--sub);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--secondary);             /* 次要文字 #86868b */
+  letter-spacing: -0.1px;
   border-bottom: 1px solid var(--border);
 }
 .data-table td {
   padding: 14px 16px;
-  font-size: 14px;
-  color: var(--text);
+  font-size: 15px;                     /* 统一字体大小 */
+  color: var(--text);                  /* 主文字 #1d1d1f */
   border-bottom: 1px solid var(--border);
 }
 .data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover { background: rgba(255,255,255,0.02); }
-.loading-cell, .empty-cell { text-align: center; padding: 40px 16px; color: var(--sub); }
+.data-table tbody tr:hover { background: rgba(0, 0, 0, 0.02); }  /* 悬停效果 */
+.loading-cell, .empty-cell { text-align: center; padding: 40px 16px; color: var(--secondary); }
 
 .actions { display: flex; gap: 8px; }
 
@@ -457,32 +457,32 @@ onMounted(fetchList)
 .sort-badge {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: 8px;                  /* 8px 圆角 */
   font-size: 12px;
-  font-weight: 600;
-  background: rgba(99,102,241,0.15);
-  color: #a78bfa;
+  font-weight: 500;
+  background: rgba(0, 113, 227, 0.12); /* 苹果蓝背景 */
+  color: var(--accent);                /* 苹果蓝文字 */
 }
 
 .type-tag {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: 8px;                  /* 8px 圆角 */
   font-size: 12px;
   font-weight: 500;
 }
-.type-video { background: rgba(59,130,246,0.15); color: #3b82f6; }
-.type-ad { background: rgba(251,146,60,0.15); color: #fb923c; }
+.type-video { background: rgba(0, 113, 227, 0.12); color: var(--accent); }  /* 苹果蓝 */
+.type-ad { background: rgba(255, 149, 0, 0.12); color: var(--warning); }    /* 警告橙 */
 
 .status-tag {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: 8px;                  /* 8px 圆角 */
   font-size: 12px;
   font-weight: 500;
 }
-.status-normal { background: rgba(34,197,94,0.1); color: #22c55e; }
-.status-disabled { background: rgba(239,68,68,0.1); color: #ef4444; }
+.status-normal { background: rgba(52, 199, 89, 0.12); color: var(--success); }   /* 成功绿 */
+.status-disabled { background: rgba(255, 59, 48, 0.12); color: var(--danger); }  /* 危险红 */
 
 .pagination {
   display: flex;
@@ -491,44 +491,53 @@ onMounted(fetchList)
   gap: 16px;
   margin-top: 20px;
 }
-.page-info { font-size: 14px; color: var(--sub); }
+.page-info { font-size: 14px; color: var(--secondary); }  /* 次要文字 */
 .page-size-select { padding: 8px 12px; font-size: 14px; }
 
-/* 弹窗 */
+/* 弹窗 - Apple 风格 */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.3);      /* 弱化遮罩 */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(10px);         /* 毛玻璃效果 */
 }
 .modal {
-  background: var(--bg2);
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 28px;                 /* 28px 圆角 */
   width: 90%;
   max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);  /* 柔和阴影 */
 }
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 24px 28px;                  /* 加大内边距 */
   border-bottom: 1px solid var(--border);
 }
-.modal-title { font-size: 18px; font-weight: 600; color: #fff; margin: 0; }
+.modal-title { 
+  font-size: 20px; 
+  font-weight: 600; 
+  color: var(--text);                  /* 主文字 #1d1d1f */
+  margin: 0;
+  letter-spacing: -0.2px;
+}
 .modal-close {
   width: 32px; height: 32px;
-  border: none; background: transparent; color: var(--sub);
-  font-size: 24px; cursor: pointer; border-radius: 6px;
+  border: none; background: rgba(0, 0, 0, 0.06); color: var(--secondary);
+  font-size: 20px; cursor: pointer; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
 }
-.modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.modal-body { padding: 24px; }
+.modal-close:hover { background: rgba(0, 0, 0, 0.1); color: var(--text); }
+.modal-body { padding: 28px; }         /* 加大内边距 */
 
 .form { display: flex; flex-direction: column; gap: 16px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -538,8 +547,11 @@ onMounted(fetchList)
 
 .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
 .error-msg {
-  color: #f87171; font-size: 13px;
-  padding: 8px; background: rgba(248,113,113,0.1); border-radius: 8px;
+  color: var(--danger);                /* 危险色 #ff3b30 */
+  font-size: 13px;
+  padding: 8px; 
+  background: rgba(255, 59, 48, 0.12); 
+  border-radius: 8px;
 }
 .btn-icon { font-size: 16px; margin-right: 4px; }
 
@@ -565,13 +577,13 @@ onMounted(fetchList)
   left: 0;
   right: 0;
   margin-top: 4px;
-  background: var(--bg2);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
   max-height: 300px;
   overflow-y: auto;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* 规范轻阴影 */
 }
 .search-result-item {
   display: flex;
@@ -653,6 +665,5 @@ onMounted(fetchList)
 }
 .btn-clear:hover {
   background: rgba(239,68,68,0.4);
-  transform: scale(1.1);
 }
 </style>

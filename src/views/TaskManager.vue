@@ -1,9 +1,5 @@
 <template>
   <div>
-    <div class="page-hd">
-      <div class="page-title">定时任务管理</div>
-    </div>
-
     <!-- 工具栏 -->
     <div class="card">
       <div class="sec-title">快速操作</div>
@@ -1098,10 +1094,10 @@ onMounted(() => {
   top: 20px;
   right: 20px;
   padding: 15px 20px;
-  background: var(--bg2);
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;                 /* 12px 圆角 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* 规范轻阴影 */
   z-index: 2000;
   animation: slideIn 0.3s ease;
   font-weight: 500;
@@ -1110,11 +1106,11 @@ onMounted(() => {
 }
 
 .toast.success {
-  border-left: 4px solid #4ade80;
+  border-left: 4px solid var(--success);  /* 成功 #34c759 */
 }
 
 .toast.error {
-  border-left: 4px solid #f87171;
+  border-left: 4px solid var(--danger);   /* 危险 #ff3b30 */
 }
 
 @keyframes slideIn {
@@ -1130,25 +1126,13 @@ onMounted(() => {
 
 /* 确认对话框 */
 .confirm-dialog {
-  background: var(--bg2);
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 28px;                 /* 28px 圆角 */
   padding: 30px;
   max-width: 400px;
   width: 90%;
   text-align: center;
-  animation: scaleIn 0.2s ease;
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
 }
 
 .confirm-icon {
@@ -1159,13 +1143,13 @@ onMounted(() => {
 .confirm-title {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   margin-bottom: 12px;
 }
 
 .confirm-message {
   font-size: 14px;
-  color: var(--sub);
+  color: var(--secondary);
   margin-bottom: 24px;
   line-height: 1.6;
 }

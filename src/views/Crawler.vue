@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div class="page-hd">
-      <div class="page-title">爬虫控制</div>
-      <router-link to="/crawler-progress" class="btn btn-outline">
-        📈 查看进度监控
-      </router-link>
-    </div>
     <!-- 执行日志 -->
     <div class="card">
       <div class="sec-title">执行日志</div>

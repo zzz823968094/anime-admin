@@ -1,8 +1,5 @@
 <template>
   <div class="progress-monitor">
-    <div class="page-hd">
-      <div class="page-title">爬虫任务进度监控</div>
-    </div>
 
     <!-- 任务启动区域 -->
     <div class="card mb-4">
@@ -446,9 +443,8 @@ onUnmounted(() => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: var(--accent);           /* 纯色，禁止渐变 */
   color: #fff;
-  box-shadow: 0 2px 8px var(--glow);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -498,8 +494,8 @@ onUnmounted(() => {
 .progress-bar-container {
   position: relative;
   height: 20px;
-  background: var(--bg3);
-  border-radius: 10px;
+  background: var(--bg);
+  border-radius: 8px;                  /* 8px 圆角 */
   overflow: hidden;
   margin: 10px 0;
   border: 1px solid var(--border);
@@ -511,10 +507,9 @@ onUnmounted(() => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  border-radius: 10px;
+  background: var(--accent);           /* 纯色，禁止渐变 */
+  border-radius: 8px;
   transition: width 0.3s ease;
-  box-shadow: 0 0 12px var(--glow);
 }
 
 .progress-text {
@@ -614,7 +609,7 @@ onUnmounted(() => {
 .mini-progress {
   position: relative;
   height: 16px;
-  background: var(--bg3);
+  background: var(--bg);
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -622,7 +617,7 @@ onUnmounted(() => {
 
 .mini-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  background: var(--accent);           /* 纯色，禁止渐变 */
   border-radius: 8px;
   transition: width 0.3s ease;
 }
