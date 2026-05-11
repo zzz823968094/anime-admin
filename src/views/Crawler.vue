@@ -2,6 +2,9 @@
   <div>
     <div class="page-hd">
       <div class="page-title">爬虫控制</div>
+      <router-link to="/crawler-progress" class="btn btn-outline">
+        📈 查看进度监控
+      </router-link>
     </div>
     <!-- 执行日志 -->
     <div class="card">
@@ -23,23 +26,6 @@
         <button class="crawler-btn" @click="handleCrawlerAllSync(66)">
           <div class="cb-icon">China</div>
           <div class="cb-title">中文动漫</div>
-        </button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="sec-title">失败数量,点击重启</div>
-      <div class="crawler-grid">
-        <button class="crawler-btn" @click="restartFail(67)">
-          <div class="cb-icon">{{ japanTotal }}</div>
-          <div class="cb-title">🇯🇵日韩动漫</div>
-        </button>
-        <button class="crawler-btn" @click="restartFail(68)">
-          <div class="cb-icon">{{ usaTotal }}</div>
-          <div class="cb-title">🌎欧美动漫</div>
-        </button>
-        <button class="crawler-btn" @click="restartFail(66)">
-          <div class="cb-icon">{{ chinaTotal }}</div>
-          <div class="cb-title">🇨🇳中文动漫</div>
         </button>
       </div>
     </div>
@@ -170,3 +156,109 @@ onMounted(() => {
   setLog('准备就绪，请选择爬取任务')
 })
 </script>
+
+<style scoped>
+.page-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #007bff;
+  background: transparent;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background: #007bff;
+  color: white;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sec-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.crawler-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.crawler-btn {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.crawler-btn:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.cb-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.cb-title {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.cb-desc {
+  font-size: 12px;
+  color: #666;
+}
+
+.crawl-log {
+  padding: 15px;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.crawl-log.loading {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.crawl-log.ok {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.crawl-log.err {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+</style>

@@ -84,6 +84,12 @@ const routes = [
         name: 'task-logs',
         component: () => import('@/views/TaskLogs.vue'),
         meta: { title: '执行记录' }
+      },
+      {
+        path: 'crawler-progress',
+        name: 'crawler-progress',
+        component: () => import('@/views/CrawlerProgress.vue'),
+        meta: { title: '爬虫进度监控' }
       }
     ]
   }

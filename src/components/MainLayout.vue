@@ -93,6 +93,13 @@
         >
           <span class="ic">📋</span>执行记录
         </button>
+        <button
+          class="sb-item"
+          :class="{ on: currentRoute === 'crawler-progress' }"
+          @click="navigate('crawler-progress')"
+        >
+          <span class="ic">📈</span>爬虫进度监控
+        </button>
       </nav>
       <div class="sb-bottom">
         <button class="sb-logout" @click="handleLogout">
