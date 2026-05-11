@@ -145,8 +145,8 @@ export const getTaskLogs = (params) => {
 }
 
 // 访问统计API
-export const getAccessStats = () => {
-  return get('/api/anime/access/stats')
+export const getAccessStats = (days) => {
+  return get('/api/anime/access/stats', { days })
 }
 
 // 设备统计API

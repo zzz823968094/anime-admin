@@ -355,7 +355,7 @@ const loadRecentAnime = async () => {
 const loadAccessStats = async (days) => {
   try {
     loadingAccess.value = true
-    const res = await getAccessStats()
+    const res = await getAccessStats(days)
     if (res.code === 200) {
 
       accessData.todayAppUV = res.data.todayAppUV || 0
@@ -371,11 +371,17 @@ const loadAccessStats = async (days) => {
 
       accessData.trend = completeTrend
 
+      // 先销毁旧实例，避免DOM切换后实例失效
+      if (chartInstance) {
+        chartInstance.dispose()
+        chartInstance = null
+      }
+
       // 等待DOM更新后绘制图表
       await nextTick()
       setTimeout(() => {
         drawChart()
-      }, 100)
+      }, 200)
     }
   } catch (e) {
     console.error('加载访问统计失败', e)
