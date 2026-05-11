@@ -352,7 +352,7 @@ const loadRecentAnime = async () => {
   }
 }
 
-const loadAccessStats = async (days = 7) => {
+const loadAccessStats = async (days) => {
   try {
     loadingAccess.value = true
     const res = await getAccessStats()
@@ -387,17 +387,7 @@ const loadAccessStats = async (days = 7) => {
 // 切换时间范围
 const changeTimeRange = (days) => {
   selectedDays.value = days
-  
-  // 根据新的天数重新补全数据
-  if (accessData.rawTrend && accessData.rawTrend.length > 0) {
-    const completeTrend = fillMissingDates(accessData.rawTrend, days)
-    accessData.trend = completeTrend
-  }
-  
-  // 直接重新绘制图表
-  setTimeout(() => {
-    drawChart()
-  }, 50)
+  loadAccessStats(days)
 }
 
 // 补全缺失日期的数据
@@ -787,7 +777,7 @@ onMounted(() => {
   loadStats()
   loadUserCount()
   loadRecentAnime()
-  loadAccessStats()
+  loadAccessStats(7)
   loadDeviceStats() // 加载设备统计
   loadSystemUpdateStatus() // 加载系统更新状态
   
