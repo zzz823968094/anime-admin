@@ -14,14 +14,17 @@
       </select>
       <button class="btn btn-primary" @click="handleSearch">搜索</button>
       <button class="btn btn-secondary" @click="handleReset">重置</button>
-
-
-      <button class="btn btn-primary" @click="handleAdd">
-        <span class="btn-icon">+</span> 新增轮播图
+      <button class="btn btn-primary btn-sm btn-add" @click="handleAdd">
+        <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        新增轮播图
       </button>
     </div>
 
     <div class="table-container">
+      <!-- 表格右上角操作区 -->
+      <div class="table-actions">
+      </div>
+
       <table class="data-table">
         <thead>
           <tr>
@@ -416,6 +419,15 @@ onMounted(fetchList)
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
+  position: relative;
+}
+
+/* 表格右上角操作区 */
+.table-actions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
 }
 
 .data-table { width: 100%; border-collapse: collapse; }

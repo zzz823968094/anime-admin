@@ -16,7 +16,7 @@
       <button class="btn btn-primary" @click="handleSearch">搜索</button>
       <button class="btn btn-secondary" @click="handleReset">重置</button>
 
-      <button class="btn btn-primary" @click="handleAdd">
+      <button class="btn btn-primary btn-add" @click="handleAdd">
         <span class="btn-icon">+</span> 新增版本
       </button>
     </div>

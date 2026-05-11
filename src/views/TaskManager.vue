@@ -278,7 +278,7 @@
               <div class="cron-result">
                 <div class="cron-result-label">生成的 Cron 表达式</div>
                 <div class="cron-result-value">{{ generatedCron }}</div>
-                <button type="button" class="btn btn-primary btn-sm apply-cron-btn" @click="applyGeneratedCron">
+                <button type="button" class="btn btn-primary btn-sm apply-cron-btn  btn-add" @click="applyGeneratedCron">
                   ✓ 应用此表达式
                 </button>
               </div>

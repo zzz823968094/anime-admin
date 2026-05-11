@@ -274,7 +274,9 @@ select.ctrl option {
   stroke: currentColor;
   transition: stroke 0.2s ease;
 }
-
+.btn-add{
+  margin-left: auto;
+}
 /* 主按钮：背景#0071e3、白色文字、8px圆角 */
 .btn-primary {
   background: #0071e3;                 /* Apple 主色 */
