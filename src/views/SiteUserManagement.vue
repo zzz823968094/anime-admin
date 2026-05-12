@@ -231,8 +231,8 @@ const fetchUserList = async () => {
     })
 
     // 根据后端实际响应结构调整
-    userList.value = res.data || []
-    pagination.total = userList.value.length
+    userList.value = res.data.records || []
+    pagination.total = res.data.total
   } catch (error) {
     console.error('获取用户列表失败:', error)
     showToast('加载用户列表失败', 'error')
