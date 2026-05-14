@@ -90,6 +90,12 @@ const routes = [
         name: 'crawler-progress',
         component: () => import('@/views/CrawlerProgress.vue'),
         meta: { title: '爬虫进度监控' }
+      },
+      {
+        path: 'access-user-detail',
+        name: 'access-user-detail',
+        component: () => import('@/views/AccessUserDetail.vue'),
+        meta: { title: '访问用户分析' }
       }
     ]
   }

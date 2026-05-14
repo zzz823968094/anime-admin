@@ -14,6 +14,14 @@
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
           <span>数据概览</span>
         </button>
+        <button
+            class="sb-item body-text"
+            :class="{ on: currentRoute === 'access-user-detail' }"
+            @click="navigate('access-user-detail')"
+        >
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>用户分析</span>
+        </button>
         <div class="sb-section">内容管理</div>
 
         <button
@@ -158,6 +166,7 @@ const currentRouteName = computed(() => {
     'anime': '番剧管理',
     'site-users': '网站用户',
     'search': '搜索统计',
+    'access-user-detail': '访问用户分析',
     'app-versions': 'App 版本',
     'users': '用户管理',
     'crawler': '爬虫控制',
