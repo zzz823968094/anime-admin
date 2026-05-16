@@ -3,14 +3,27 @@
  */
 
 // 动漫类型
-export const ANIME_TYPES = {
+export interface AnimeType {
+  id: number
+  name: string
+  flag: string
+  label: string
+}
+
+export const ANIME_TYPES: Record<string, AnimeType> = {
   CHINA: { id: 66, name: '中文', flag: '🇨🇳', label: '🇨🇳 中文' },
-  JAPAN_KOREA: { id: 67, name: '日韩', flag: '🇯🇵', label: '🇯🇵 日韩' },
+  JAPAN_KOREA: { id: 67, name: '日韩', flag: '🇯', label: '🇯🇵 日韩' },
   WESTERN: { id: 68, name: '欧美', flag: '🌎', label: '🌎 欧美' }
 }
 
 // 番剧状态
-export const ANIME_STATUS = {
+export interface AnimeStatus {
+  code: number
+  label: string
+  class: string
+}
+
+export const ANIME_STATUS: Record<string, AnimeStatus> = {
   ONGOING: { code: 0, label: '连载中', class: 'b-green' },
   COMPLETED: { code: 1, label: '已完结', class: 'b-blue' },
   OFFLINE: { code: 2, label: '已下线', class: 'b-red' }
@@ -74,20 +87,20 @@ export const PAGINATION = {
 // 刷新间隔（毫秒）
 export const REFRESH_INTERVAL = {
   TASK_LIST: 30000, // 任务列表30秒
-  DASHBOARD: 60000  // 仪表盘60秒
+  DASHBOARD: 60000 // 仪表盘60秒
 }
 
 // 缓存时间（毫秒）
 export const CACHE_TTL = {
-  SHORT: 5 * 60 * 1000,    // 5分钟
-  MEDIUM: 30 * 60 * 1000,  // 30分钟
+  SHORT: 5 * 60 * 1000, // 5分钟
+  MEDIUM: 30 * 60 * 1000, // 30分钟
   LONG: 24 * 60 * 60 * 1000 // 24小时
 }
 
 // 防抖延迟（毫秒）
 export const DEBOUNCE_DELAY = {
-  SEARCH: 500,    // 搜索防抖
-  INPUT: 300      // 输入防抖
+  SEARCH: 500, // 搜索防抖
+  INPUT: 300 // 输入防抖
 }
 
 // Token Key
@@ -107,27 +120,27 @@ export const UPLOAD_LIMITS = {
 }
 
 // 辅助函数：获取动漫类型映射
-export function getAnimeTypeMap() {
+export function getAnimeTypeMap(): Record<number, string> {
   return Object.values(ANIME_TYPES).reduce((map, type) => {
     map[type.id] = type.label
     return map
-  }, {})
+  }, {} as Record<number, string>)
 }
 
 // 辅助函数：获取番剧状态映射
-export function getAnimeStatusMap() {
+export function getAnimeStatusMap(): Record<number, [string, string]> {
   return Object.values(ANIME_STATUS).reduce((map, status) => {
     map[status.code] = [status.label, status.class]
     return map
-  }, {})
+  }, {} as Record<number, [string, string]>)
 }
 
 // 辅助函数：根据ID获取动漫类型信息
-export function getAnimeTypeById(id) {
-  return Object.values(ANIME_TYPES).find(type => type.id === id)
+export function getAnimeTypeById(id: number): AnimeType | undefined {
+  return Object.values(ANIME_TYPES).find((type) => type.id === id)
 }
 
 // 辅助函数：根据代码获取番剧状态信息
-export function getAnimeStatusByCode(code) {
-  return Object.values(ANIME_STATUS).find(status => status.code === code)
+export function getAnimeStatusByCode(code: number): AnimeStatus | undefined {
+  return Object.values(ANIME_STATUS).find((status) => status.code === code)
 }

@@ -1,572 +1,446 @@
 <template>
   <div class="app-version">
+    <!-- 搜索栏 -->
+    <el-card shadow="never" class="search-card">
+      <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form-item label="平台">
+          <el-select
+            v-model="searchForm.platform"
+            placeholder="全部平台"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="Android" value="android" />
+            <el-option label="iOS" value="ios" />
+            <el-option label="通用" value="all" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select
+            v-model="searchForm.status"
+            placeholder="全部状态"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="启用" value="active" />
+            <el-option label="停用" value="inactive" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>
+            新增版本
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-    <div class="search-bar">
-      <select v-model="searchForm.platform" class="ctrl search-select" @change="handleSearch">
-        <option value="">全部平台</option>
-        <option value="android">Android</option>
-        <option value="ios">iOS</option>
-        <option value="all">通用</option>
-      </select>
-      <select v-model="searchForm.status" class="ctrl search-select" @change="handleSearch">
-        <option value="">全部状态</option>
-        <option value="active">启用</option>
-        <option value="inactive">停用</option>
-      </select>
-      <button class="btn btn-primary" @click="handleSearch">搜索</button>
-      <button class="btn btn-secondary" @click="handleReset">重置</button>
+    <!-- 表格 -->
+    <el-card shadow="never" class="table-card">
+      <el-table v-loading="loading" :data="list" border stripe style="width: 100%">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column label="平台" width="100">
+          <template #default="{ row }">
+            <el-tag :type="getPlatformType(row.platform)" size="small">
+              {{ platformLabel(row.platform) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="versionCode" label="版本号" width="100" />
+        <el-table-column prop="versionName" label="版本名称" min-width="120" />
+        <el-table-column label="强制更新" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.forceUpdate ? 'danger' : 'info'" size="small">
+              {{ row.forceUpdate ? '强制' : '可选' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="文件大小" width="100">
+          <template #default="{ row }">
+            {{ formatSize(row.fileSize) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
+              {{ row.status === 'active' ? '启用' : '停用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" min-width="160">
+          <template #default="{ row }">
+            {{ formatDate(row.createTime) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button
+              link
+              :type="row.status === 'active' ? 'warning' : 'success'"
+              size="small"
+              @click="handleToggleStatus(row)"
+            >
+              {{ row.status === 'active' ? '停用' : '启用' }}
+            </el-button>
+            <el-button link type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-      <button class="btn btn-primary btn-add" @click="handleAdd">
-        <span class="btn-icon">+</span> 新增版本
-      </button>
-    </div>
-
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>平台</th>
-            <th>版本号</th>
-            <th>版本名称</th>
-            <th>强制更新</th>
-            <th>文件大小</th>
-            <th>状态</th>
-            <th>创建时间</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="9" class="loading-cell">加载中...</td>
-          </tr>
-          <tr v-else-if="list.length === 0">
-            <td colspan="9" class="empty-cell">暂无数据</td>
-          </tr>
-          <tr v-else v-for="item in list" :key="item.id">
-            <td>{{ item.id }}</td>
-            <td><span :class="['platform-tag', `platform-${item.platform}`]">{{ platformLabel(item.platform) }}</span></td>
-            <td>{{ item.versionCode }}</td>
-            <td>{{ item.versionName }}</td>
-            <td>
-              <span :class="['force-tag', item.forceUpdate ? 'force-yes' : 'force-no']">
-                {{ item.forceUpdate ? '强制' : '可选' }}
-              </span>
-            </td>
-            <td>{{ formatSize(item.fileSize) }}</td>
-            <td>
-              <span :class="['status-tag', item.status === 'active' ? 'status-normal' : 'status-disabled']">
-                {{ item.status === 'active' ? '启用' : '停用' }}
-              </span>
-            </td>
-            <td>{{ formatDate(item.createTime) }}</td>
-            <td class="actions">
-              <button class="btn btn-ghost btn-sm" @click="handleEdit(item)">编辑</button>
-              <button
-                class="btn btn-sm"
-                :class="item.status === 'active' ? 'btn-warning' : 'btn-success'"
-                @click="handleToggleStatus(item)"
-              >{{ item.status === 'active' ? '停用' : '启用' }}</button>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(item)">删除</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-if="pagination.total > 0" class="pagination">
-      <button class="btn btn-sm" :disabled="pagination.current === 1" @click="handlePageChange(pagination.current - 1)">上一页</button>
-      <span class="page-info">第 {{ pagination.current }} / {{ pagination.pages }} 页，共 {{ pagination.total }} 条</span>
-      <button class="btn btn-sm" :disabled="pagination.current === pagination.pages" @click="handlePageChange(pagination.current + 1)">下一页</button>
-      <select class="ctrl page-size-select" v-model.number="pagination.pageSize" @change="handlePageSizeChange">
-        <option :value="10">10条/页</option>
-        <option :value="20">20条/页</option>
-        <option :value="50">50条/页</option>
-      </select>
-    </div>
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handlePageSizeChange"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </el-card>
 
     <!-- 新增/编辑弹窗 -->
-    <div v-if="modalVisible" class="modal-overlay" @click.self="modalVisible = false">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 class="modal-title">{{ editingId ? '编辑版本' : '新增版本' }}</h3>
-          <button class="modal-close" @click="modalVisible = false">×</button>
-        </div>
-        <div class="modal-body">
-          <form class="form" @submit.prevent="handleSubmit">
-            <div class="form-group">
-              <label class="form-label">平台 *</label>
-              <select v-model="form.platform" class="ctrl form-select" required>
-                <option value="android">Android</option>
-                <option value="ios">iOS</option>
-                <option value="all">通用</option>
-              </select>
+    <el-dialog
+      v-model="modalVisible"
+      :title="editingId ? '编辑版本' : '新增版本'"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="form" label-width="100px">
+        <el-form-item label="平台" required>
+          <el-select v-model="form.platform" style="width: 100%">
+            <el-option label="Android" value="android" />
+            <el-option label="iOS" value="ios" />
+            <el-option label="通用" value="all" />
+          </el-select>
+        </el-form-item>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="版本号" required>
+              <el-input-number v-model="form.versionCode" :min="1" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="版本名称" required>
+              <el-input v-model="form.versionName" placeholder="如：1.0.0" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="上传安装包" required>
+          <el-upload
+            ref="uploadRef"
+            :auto-upload="false"
+            :on-change="handleFileUpload"
+            :limit="1"
+            accept=".apk,.ipa,.exe,.dmg"
+            drag
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              点击或拖拽文件到此处上传
+              <br />
+              <small>支持 .apk, .ipa, .exe, .dmg</small>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">版本号（整数）*</label>
-                <input v-model.number="form.versionCode" type="number" class="ctrl form-input" placeholder="如：100" required min="1" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">版本名称 *</label>
-                <input v-model="form.versionName" type="text" class="ctrl form-input" placeholder="如：1.0.0" required />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">上传安装包 *</label>
-              <div class="upload-area">
-                <input 
-                  type="file" 
-                  ref="fileInput"
-                  @change="handleFileUpload" 
-                  accept=".apk,.ipa,.exe,.dmg"
-                  class="file-input"
-                  :disabled="uploading"
-                />
-                <div v-if="uploading" class="upload-status uploading">
-                  <span class="upload-icon">⏳</span>
-                  <span>上传中...</span>
-                </div>
-                <div v-else-if="selectedFile" class="upload-status success">
-                  <span class="upload-icon">✓</span>
-                  <span>{{ selectedFile.name }}</span>
-                  <span class="file-size">({{ formatSize(selectedFile.size) }})</span>
-                </div>
-                <div v-else class="upload-hint">
-                  点击选择文件或拖拽文件到此处（支持 .apk, .ipa, .exe, .dmg）
-                </div>
-              </div>
-            </div>
-            <div v-if="form.downloadUrl && !selectedFile" class="form-group">
-              <label class="form-label">下载地址</label>
-              <input v-model="form.downloadUrl" type="text" class="ctrl form-input" readonly />
-            </div>
-            <div class="form-group">
-              <label class="form-label">更新说明</label>
-              <textarea v-model="form.releaseNotes" class="ctrl form-textarea" rows="4" placeholder="本次更新内容..."></textarea>
-            </div>
-            <div class="form-row">
-              <div class="form-group form-check">
-                <label class="check-label">
-                  <input v-model="form.forceUpdate" type="checkbox" class="check-input" />
-                  <span>强制更新</span>
-                </label>
-              </div>
-              <div class="form-group">
-                <label class="form-label">状态</label>
-                <select v-model="form.status" class="ctrl form-select">
-                  <option value="active">启用</option>
-                  <option value="inactive">停用</option>
-                </select>
-              </div>
-            </div>
-            <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="modalVisible = false">取消</button>
-              <button type="submit" class="btn btn-primary" :disabled="submitting">
-                {{ submitting ? '保存中...' : '保存' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          </el-upload>
+        </el-form-item>
+
+        <el-form-item v-if="form.downloadUrl && !selectedFile" label="下载地址">
+          <el-input v-model="form.downloadUrl" readonly />
+        </el-form-item>
+
+        <el-form-item label="更新说明">
+          <el-input
+            v-model="form.releaseNotes"
+            type="textarea"
+            :rows="4"
+            placeholder="本次更新内容..."
+          />
+        </el-form-item>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="强制更新">
+              <el-switch v-model="form.forceUpdate" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态">
+              <el-select v-model="form.status" style="width: 100%">
+                <el-option label="启用" value="active" />
+                <el-option label="停用" value="inactive" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { getVersionList, createVersion, updateVersion, deleteVersion, uploadFile } from '@/api/appVersion.js'
+<script setup lang="ts">
+  import { ref, reactive, onMounted } from 'vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { Plus, UploadFilled } from '@element-plus/icons-vue'
+  import {
+    getVersionList,
+    createVersion,
+    updateVersion,
+    deleteVersion,
+    uploadFile
+  } from '@/api/appVersion'
+  import type { AppVersion } from '@/types/api'
 
-const loading = ref(false)
-const list = ref([])
-const pagination = reactive({ current: 1, pageSize: 10, total: 0, pages: 1 })
-const searchForm = reactive({ platform: '', status: '' })
+  const loading = ref(false)
+  const list = ref<AppVersion[]>([])
+  const pagination = reactive({ current: 1, pageSize: 10, total: 0 })
+  const searchForm = reactive({ platform: '', status: '' })
 
-const modalVisible = ref(false)
-const editingId = ref(null)
-const submitting = ref(false)
-const uploading = ref(false)
-const errorMsg = ref('')
-const selectedFile = ref(null)
-const form = reactive({
-  platform: 'android',
-  versionCode: '',
-  versionName: '',
-  downloadUrl: '',
-  fileSize: '',
-  releaseNotes: '',
-  forceUpdate: false,
-  status: 'active',
-})
+  const modalVisible = ref(false)
+  const editingId = ref<number | null>(null)
+  const submitting = ref(false)
+  const uploading = ref(false)
+  const selectedFile = ref<File | null>(null)
+  const uploadRef = ref()
 
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await getVersionList({
-      pageNum: pagination.current,
-      pageSize: pagination.pageSize,
-      platform: searchForm.platform || undefined,
-      status: searchForm.status || undefined,
-    })
-    if (res.code === 200) {
-      list.value = res.data.records
-      pagination.total = res.data.total
-      pagination.pages = res.data.pages
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  pagination.current = 1
-  fetchList()
-}
-
-function handleReset() {
-  searchForm.platform = ''
-  searchForm.status = ''
-  handleSearch()
-}
-
-function handlePageChange(page) {
-  pagination.current = page
-  fetchList()
-}
-
-function handlePageSizeChange() {
-  pagination.current = 1
-  fetchList()
-}
-
-function handleAdd() {
-  editingId.value = null
-  Object.assign(form, { platform: 'android', versionCode: '', versionName: '', downloadUrl: '', fileSize: '', releaseNotes: '', forceUpdate: false, status: 'active' })
-  selectedFile.value = null
-  errorMsg.value = ''
-  modalVisible.value = true
-}
-
-function handleEdit(item) {
-  editingId.value = item.id
-  Object.assign(form, {
-    platform: item.platform,
-    versionCode: item.versionCode,
-    versionName: item.versionName,
-    downloadUrl: item.downloadUrl,
-    fileSize: item.fileSize || '',
-    releaseNotes: item.releaseNotes || '',
-    forceUpdate: item.forceUpdate,
-    status: item.status,
+  const form = reactive({
+    platform: 'android',
+    versionCode: 0,
+    versionName: '',
+    downloadUrl: '',
+    fileSize: '',
+    releaseNotes: '',
+    forceUpdate: false,
+    status: 'active'
   })
-  selectedFile.value = null
-  errorMsg.value = ''
-  modalVisible.value = true
-}
 
-async function handleFileUpload(event) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  // 验证文件类型
-  const allowedTypes = ['.apk', '.ipa', '.exe', '.dmg']
-  const fileName = file.name.toLowerCase()
-  const isValidType = allowedTypes.some(type => fileName.endsWith(type))
-  
-  if (!isValidType) {
-    errorMsg.value = '只支持上传 .apk, .ipa, .exe, .dmg 格式的文件'
-    return
+  async function fetchList() {
+    loading.value = true
+    try {
+      const res = await getVersionList({
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize,
+        platform: searchForm.platform || undefined,
+        status: searchForm.status || undefined
+      })
+      list.value = res.data.list || []
+      pagination.total = res.data.total
+    } catch (error: any) {
+      ElMessage.error(error.message || '加载失败')
+    } finally {
+      loading.value = false
+    }
   }
 
-  uploading.value = true
-  errorMsg.value = ''
-  
-  try {
-    const res = await uploadFile(file)
-    if (res.code === 200) {
+  function handleSearch() {
+    pagination.current = 1
+    fetchList()
+  }
+
+  function handleReset() {
+    searchForm.platform = ''
+    searchForm.status = ''
+    handleSearch()
+  }
+
+  function handlePageChange(page: number) {
+    pagination.current = page
+    fetchList()
+  }
+
+  function handlePageSizeChange(size: number) {
+    pagination.pageSize = size
+    pagination.current = 1
+    fetchList()
+  }
+
+  function handleAdd() {
+    editingId.value = null
+    Object.assign(form, {
+      platform: 'android',
+      versionCode: 0,
+      versionName: '',
+      downloadUrl: '',
+      fileSize: '',
+      releaseNotes: '',
+      forceUpdate: false,
+      status: 'active'
+    })
+    selectedFile.value = null
+    modalVisible.value = true
+  }
+
+  function handleEdit(item: AppVersion) {
+    editingId.value = item.id
+    Object.assign(form, {
+      platform: item.platform,
+      versionCode: item.versionCode,
+      versionName: item.versionName,
+      downloadUrl: item.downloadUrl,
+      fileSize: item.fileSize || '',
+      releaseNotes: item.releaseNotes || '',
+      forceUpdate: item.forceUpdate,
+      status: item.status
+    })
+    selectedFile.value = null
+    modalVisible.value = true
+  }
+
+  async function handleFileUpload(file: File) {
+    // 验证文件类型
+    const allowedTypes = ['.apk', '.ipa', '.exe', '.dmg']
+    const fileName = file.name.toLowerCase()
+    const isValidType = allowedTypes.some((type) => fileName.endsWith(type))
+
+    if (!isValidType) {
+      ElMessage.error('只支持上传 .apk, .ipa, .exe, .dmg 格式的文件')
+      return
+    }
+
+    uploading.value = true
+
+    try {
+      const res = await uploadFile(file)
       form.downloadUrl = res.data.url
       form.fileSize = res.data.size
       selectedFile.value = file
-      errorMsg.value = ''
+      ElMessage.success('上传成功')
+    } catch (e: any) {
+      ElMessage.error(e.message || '文件上传失败')
+    } finally {
+      uploading.value = false
     }
-  } catch (e) {
-    errorMsg.value = e?.response?.data?.message || '文件上传失败'
-  } finally {
-    uploading.value = false
   }
-}
 
-async function handleSubmit() {
-  if (!form.downloadUrl) {
-    errorMsg.value = '请先上传文件'
-    return
-  }
-  
-  submitting.value = true
-  errorMsg.value = ''
-  try {
-    const payload = { ...form, fileSize: form.fileSize || null }
-    if (editingId.value) {
-      await updateVersion(editingId.value, payload)
-    } else {
-      await createVersion(payload)
+  async function handleSubmit() {
+    if (!form.downloadUrl) {
+      ElMessage.warning('请先上传文件')
+      return
     }
-    modalVisible.value = false
-    fetchList()
-  } catch (e) {
-    errorMsg.value = e?.response?.data?.message || '操作失败'
-  } finally {
-    submitting.value = false
+
+    submitting.value = true
+    try {
+      const payload = { ...form, fileSize: form.fileSize || null }
+      if (editingId.value) {
+        await updateVersion(editingId.value, payload)
+        ElMessage.success('更新成功')
+      } else {
+        await createVersion(payload)
+        ElMessage.success('创建成功')
+      }
+      modalVisible.value = false
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '操作失败')
+    } finally {
+      submitting.value = false
+    }
   }
-}
 
-async function handleToggleStatus(item) {
-  try {
-    await updateVersion(item.id, { status: item.status === 'active' ? 'inactive' : 'active' })
-    fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '操作失败')
+  async function handleToggleStatus(item: AppVersion) {
+    try {
+      await updateVersion(item.id, { status: item.status === 'active' ? 'inactive' : 'active' })
+      ElMessage.success('状态更新成功')
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '操作失败')
+    }
   }
-}
 
-async function handleDelete(item) {
-  if (!confirm(`确定删除版本 ${item.versionName}（${item.platform}）？`)) return
-  try {
-    await deleteVersion(item.id)
-    fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '删除失败')
+  async function handleDelete(item: AppVersion) {
+    try {
+      await ElMessageBox.confirm(
+        `确定删除版本 ${item.versionName}（${platformLabel(item.platform)}）？`,
+        '警告',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+      await deleteVersion(item.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    } catch (e: any) {
+      if (e !== 'cancel') {
+        ElMessage.error(e.message || '删除失败')
+      }
+    }
   }
-}
 
-function platformLabel(p) {
-  return { android: 'Android', ios: 'iOS', all: '通用' }[p] || p
-}
+  function platformLabel(p: string) {
+    return { android: 'Android', ios: 'iOS', all: '通用' }[p] || p
+  }
 
-function formatSize(bytes) {
-  if (!bytes) return '-'
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / 1024 / 1024).toFixed(1) + ' MB'
-}
+  function getPlatformType(platform: string) {
+    const typeMap: Record<string, 'success' | 'warning' | 'info'> = {
+      android: 'success',
+      ios: 'warning',
+      all: 'info'
+    }
+    return typeMap[platform] || 'info'
+  }
 
-function formatDate(d) {
-  if (!d) return '-'
-  return new Date(d).toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
-}
+  function formatSize(bytes?: string | number) {
+    if (!bytes) {
+      return '-'
+    }
+    const numBytes = typeof bytes === 'string' ? parseInt(bytes) : bytes
+    if (numBytes < 1024) {
+      return numBytes + ' B'
+    }
+    if (numBytes < 1024 * 1024) {
+      return (numBytes / 1024).toFixed(1) + ' KB'
+    }
+    return (numBytes / 1024 / 1024).toFixed(1) + ' MB'
+  }
 
-onMounted(fetchList)
+  function formatDate(d?: string) {
+    if (!d) {
+      return '-'
+    }
+    return new Date(d).toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
+  }
+
+  onMounted(fetchList)
 </script>
 
 <style scoped>
-.app-version { padding: 24px; }
+  .app-version {
+    padding: 24px;
+  }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
+  .search-card {
+    margin-bottom: 20px;
+  }
 
-.page-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
-}
+  .table-card {
+    margin-bottom: 20px;
+  }
 
-.search-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
 
-.search-select { min-width: 130px; }
+  :deep(.el-upload-dragger) {
+    padding: 40px;
+  }
 
-.table-container {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table thead { background: rgba(255,255,255,0.05); }
-.data-table th {
-  padding: 14px 16px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--sub);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border);
-}
-.data-table td {
-  padding: 14px 16px;
-  font-size: 14px;
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-}
-.data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover { background: rgba(255,255,255,0.02); }
-.loading-cell, .empty-cell { text-align: center; padding: 40px 16px; color: var(--sub); }
-
-.actions { display: flex; gap: 8px; }
-
-.platform-tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-}
-.platform-android { background: rgba(61,220,132,0.15); color: #3ddc84; }
-.platform-ios { background: rgba(147,197,253,0.15); color: #93c5fd; }
-.platform-all { background: rgba(167,139,250,0.15); color: #a78bfa; }
-
-.force-tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-}
-.force-yes { background: rgba(251,113,133,0.15); color: #fb7185; }
-.force-no { background: rgba(148,163,184,0.1); color: #94a3b8; }
-
-.status-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-.status-normal { background: rgba(34,197,94,0.1); color: #22c55e; }
-.status-disabled { background: rgba(239,68,68,0.1); color: #ef4444; }
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 20px;
-}
-.page-info { font-size: 14px; color: var(--sub); }
-.page-size-select { padding: 8px 12px; font-size: 14px; }
-
-/* 弹窗 */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.modal {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 28px;                 /* 28px 圆角 */
-  width: 90%;
-  max-width: 560px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-}
-.modal-title { font-size: 18px; font-weight: 600; color: var(--text); margin: 0; }
-.modal-close {
-  width: 32px; height: 32px;
-  border: none; background: transparent; color: var(--sub);
-  font-size: 24px; cursor: pointer; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-}
-.modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.modal-body { padding: 24px; }
-
-.form { display: flex; flex-direction: column; gap: 16px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-label { font-size: 13px; font-weight: 500; color: var(--text); }
-.form-input, .form-select { padding: 10px 14px; font-size: 14px; }
-.form-textarea {
-  padding: 10px 14px;
-  font-size: 14px;
-  resize: vertical;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: inherit;
-}
-.form-textarea:focus { outline: none; border-color: var(--primary); }
-
-.form-check { justify-content: flex-end; }
-.check-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text); }
-.check-input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
-
-.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
-.error-msg {
-  color: #f87171; font-size: 13px;
-  padding: 8px; background: rgba(248,113,113,0.1); border-radius: 8px;
-}
-.btn-icon { font-size: 16px; margin-right: 4px; }
-
-/* 文件上传区域 */
-.upload-area {
-  position: relative;
-  border: 2px dashed var(--border);
-  border-radius: 8px;
-  padding: 24px;
-  text-align: center;
-  transition: all 0.3s;
-  background: rgba(255,255,255,0.02);
-}
-.upload-area:hover {
-  border-color: var(--primary);
-  background: rgba(99,102,241,0.05);
-}
-.file-input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
-}
-.upload-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text);
-}
-.upload-status.uploading {
-  color: #fbbf24;
-}
-.upload-status.success {
-  color: #22c55e;
-}
-.upload-icon {
-  font-size: 20px;
-}
-.file-size {
-  font-size: 12px;
-  color: var(--sub);
-  margin-left: 4px;
-}
-.upload-hint {
-  color: var(--sub);
-  font-size: 14px;
-}
+  .upload-hint {
+    color: var(--secondary);
+    font-size: 14px;
+  }
 </style>

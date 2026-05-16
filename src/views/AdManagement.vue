@@ -1,418 +1,376 @@
 <template>
   <div class="ad-management">
+    <!-- 搜索栏 -->
+    <el-card shadow="never" class="search-card">
+      <el-form :inline="true" :model="searchForm">
+        <el-form-item label="广告位编码">
+          <el-input
+            v-model="searchForm.positionCode"
+            placeholder="广告位编码"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select
+            v-model="searchForm.status"
+            placeholder="全部状态"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="启用" value="1" />
+            <el-option label="禁用" value="0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>
+            新增广告
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-    <div class="search-bar">
-      <input 
-        v-model="searchForm.positionCode" 
-        type="text" 
-        class="ctrl search-input" 
-        placeholder="广告位编码"
-        @keyup.enter="handleSearch"
-      />
-      <select v-model="searchForm.status" class="ctrl search-select" @change="handleSearch">
-        <option value="">全部状态</option>
-        <option value="1">启用</option>
-        <option value="0">禁用</option>
-      </select>
-      <button class="btn btn-primary" @click="handleSearch">搜索</button>
-      <button class="btn btn-secondary" @click="handleReset">重置</button>
+    <!-- 表格 -->
+    <el-card shadow="never" class="table-card">
+      <el-table v-loading="loading" :data="list" border stripe style="width: 100%">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column label="标题" min-width="150">
+          <template #default="{ row }">
+            <div>{{ row.title || '-' }}</div>
+            <div v-if="row.subtitle" class="subtitle">{{ row.subtitle }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="positionCode" label="广告位" width="120" />
+        <el-table-column label="图片" width="100">
+          <template #default="{ row }">
+            <el-image
+              v-if="row.imageUrl"
+              :src="row.imageUrl"
+              fit="cover"
+              style="width: 60px; height: 40px"
+            />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="链接" min-width="150">
+          <template #default="{ row }">
+            <a v-if="row.linkValue" :href="row.linkValue" target="_blank" class="link-text">
+              {{ truncateText(row.linkValue, 20) }}
+            </a>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="priority" label="优先级" width="80" />
+        <el-table-column label="排序" width="80">
+          <template #default="{ row }">
+            <el-tag size="small">{{ row.sortOrder || 0 }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+              {{ row.status === 1 ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="展示/点击" width="120">
+          <template #default="{ row }">
+            <div>展示: {{ row.impressionCount || 0 }}</div>
+            <div>点击: {{ row.clickCount || 0 }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="有效期" min-width="180">
+          <template #default="{ row }">
+            <div v-if="row.startTime">{{ formatDate(row.startTime) }}</div>
+            <div v-if="row.endTime">至 {{ formatDate(row.endTime) }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button link type="warning" size="small" @click="handleManageStrategy(row)">
+              策略
+            </el-button>
+            <el-button
+              link
+              :type="row.status === 1 ? 'warning' : 'success'"
+              size="small"
+              @click="handleToggleStatus(row)"
+            >
+              {{ row.status === 1 ? '禁用' : '启用' }}
+            </el-button>
+            <el-button link type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-      <button class="btn btn-primary btn-add" @click="handleAdd">
-        <span class="btn-icon">+</span> 新增广告
-      </button>
-    </div>
-
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>标题</th>
-            <th>广告位</th>
-            <th>图片</th>
-            <th>链接</th>
-            <th>优先级</th>
-            <th>排序</th>
-            <th>状态</th>
-            <th>展示/点击</th>
-            <th>有效期</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="11" class="loading-cell">加载中...</td>
-          </tr>
-          <tr v-else-if="list.length === 0">
-            <td colspan="11" class="empty-cell">暂无数据</td>
-          </tr>
-          <tr v-else v-for="item in list" :key="item.id">
-            <td>{{ item.id }}</td>
-            <td>
-              <div class="title-cell">
-                <div>{{ item.title || '-' }}</div>
-                <div v-if="item.subtitle" class="subtitle">{{ item.subtitle }}</div>
-              </div>
-            </td>
-            <td>{{ item.positionCode || '-' }}</td>
-            <td>
-              <img v-if="item.imageUrl" :src="item.imageUrl" class="ad-thumb" alt="广告图" />
-              <span v-else>-</span>
-            </td>
-            <td>
-              <a v-if="item.linkValue" :href="item.linkValue" target="_blank" class="link-text">
-                {{ truncateText(item.linkValue, 20) }}
-              </a>
-              <span v-else>-</span>
-            </td>
-            <td>{{ item.priority || 0 }}</td>
-            <td>
-              <span class="sort-badge">{{ item.sortOrder || 0 }}</span>
-            </td>
-            <td>
-              <span :class="['status-tag', item.status === 1 ? 'status-normal' : 'status-disabled']">
-                {{ item.status === 1 ? '启用' : '禁用' }}
-              </span>
-            </td>
-            <td>
-              <div class="stats-cell">
-                <div>展示: {{ item.impressionCount || 0 }}</div>
-                <div>点击: {{ item.clickCount || 0 }}</div>
-              </div>
-            </td>
-            <td>
-              <div class="time-cell">
-                <div v-if="item.startTime">{{ formatDate(item.startTime) }}</div>
-                <div v-if="item.endTime">至 {{ formatDate(item.endTime) }}</div>
-              </div>
-            </td>
-            <td class="actions">
-              <button class="btn btn-ghost btn-sm" @click="handleEdit(item)">编辑</button>
-              <button class="btn btn-info btn-sm" @click="handleManageStrategy(item)">策略</button>
-              <button
-                class="btn btn-sm"
-                :class="item.status === 1 ? 'btn-warning' : 'btn-success'"
-                @click="handleToggleStatus(item)"
-              >{{ item.status === 1 ? '禁用' : '启用' }}</button>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(item)">删除</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-if="pagination.total > 0" class="pagination">
-      <button class="btn btn-sm" :disabled="pagination.current === 1" @click="handlePageChange(pagination.current - 1)">上一页</button>
-      <span class="page-info">第 {{ pagination.current }} / {{ pagination.pages }} 页，共 {{ pagination.total }} 条</span>
-      <button class="btn btn-sm" :disabled="pagination.current === pagination.pages" @click="handlePageChange(pagination.current + 1)">下一页</button>
-      <select class="ctrl page-size-select" v-model.number="pagination.pageSize" @change="handlePageSizeChange">
-        <option :value="10">10条/页</option>
-        <option :value="20">20条/页</option>
-        <option :value="50">50条/页</option>
-      </select>
-    </div>
-
-    <!-- 新增/编辑弹窗 -->
-    <div v-if="modalVisible" class="modal-overlay" @click.self="modalVisible = false">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 class="modal-title">{{ editingId ? '编辑广告' : '新增广告' }}</h3>
-          <button class="modal-close" @click="modalVisible = false">×</button>
-        </div>
-        <div class="modal-body">
-          <form class="form" @submit.prevent="handleSubmit">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">广告位编码 *</label>
-                <select v-model="form.positionCode" class="ctrl form-select" required>
-                  <option value="">请选择广告位</option>
-                  <option v-for="pos in adPositions" :key="pos.id" :value="pos.positionCode">
-                    {{ pos.positionName }} ({{ pos.positionCode }})
-                  </option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">标题 *</label>
-                <input v-model="form.title" type="text" class="ctrl form-input" placeholder="广告标题" required />
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">副标题</label>
-              <input v-model="form.subtitle" type="text" class="ctrl form-input" placeholder="广告副标题" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">图片 URL *</label>
-              <input v-model="form.imageUrl" type="text" class="ctrl form-input" placeholder="广告图片URL" required />
-              <img v-if="form.imageUrl" :src="form.imageUrl" class="image-preview" alt="预览" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">视频 URL</label>
-              <input v-model="form.videoUrl" type="text" class="ctrl form-input" placeholder="广告视频URL（视频类型时使用）" />
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">链接类型 *</label>
-                <select v-model="form.linkType" class="ctrl form-select" required>
-                  <option value="URL">外部链接</option>
-                  <option value="ANIME">番剧详情</option>
-                  <option value="SEARCH">搜索结果</option>
-                  <option value="NONE">无跳转</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">链接值</label>
-                <input v-model="form.linkValue" type="text" class="ctrl form-input" placeholder="URL地址/番剧ID/搜索关键词" />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">开始时间 *</label>
-                <input v-model="form.startTime" type="datetime-local" class="ctrl form-input" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label">结束时间 *</label>
-                <input v-model="form.endTime" type="datetime-local" class="ctrl form-input" required />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">优先级</label>
-                <input v-model.number="form.priority" type="number" class="ctrl form-input" placeholder="数字越大优先级越高" min="0" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">排序</label>
-                <input v-model.number="form.sortOrder" type="number" class="ctrl form-input" placeholder="数字越小越靠前" min="0" />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">目标用户类型</label>
-                <select v-model="form.targetType" class="ctrl form-select">
-                  <option value="ALL">全部用户</option>
-                  <option value="NEW">新用户</option>
-                  <option value="VIP">VIP用户</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">状态</label>
-                <select v-model.number="form.status" class="ctrl form-select">
-                  <option :value="1">启用</option>
-                  <option :value="0">禁用</option>
-                </select>
-              </div>
-            </div>
-
-            <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="modalVisible = false">取消</button>
-              <button type="submit" class="btn btn-primary" :disabled="submitting">
-                {{ submitting ? '保存中...' : '保存' }}
-              </button>
-            </div>
-          </form>
-        </div>
+      <!-- 分页 -->
+      <div v-if="pagination.total > 0" class="pagination-container">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next"
+          @current-change="fetchList"
+          @size-change="handlePageSizeChange"
+        />
       </div>
-    </div>
+    </el-card>
 
-    <!-- 策略管理弹窗 -->
-    <div v-if="strategyModalVisible" class="modal-overlay" @click.self="strategyModalVisible = false">
-      <div class="modal modal-large">
-        <div class="modal-header">
-          <h3 class="modal-title">广告投放策略 - {{ currentAdTitle }}</h3>
-          <button class="modal-close" @click="strategyModalVisible = false">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="strategy-header">
-            <button class="btn btn-primary btn-sm" @click="handleAddStrategy">
-              <span class="btn-icon">+</span> 新增策略
-            </button>
+    <!-- 新增/编辑对话框 -->
+    <el-dialog
+      v-model="modalVisible"
+      :title="editingId ? '编辑广告' : '新增广告'"
+      width="700px"
+      @close="resetForm"
+    >
+      <el-form :model="form" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="广告位编码" required>
+              <el-select v-model="form.positionCode" placeholder="请选择广告位" style="width: 100%">
+                <el-option
+                  v-for="pos in adPositions"
+                  :key="pos.id"
+                  :label="`${pos.positionName} (${pos.positionCode})`"
+                  :value="pos.positionCode"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="标题" required>
+              <el-input v-model="form.title" placeholder="广告标题" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="副标题">
+          <el-input v-model="form.subtitle" placeholder="广告副标题" />
+        </el-form-item>
+
+        <el-form-item label="图片 URL" required>
+          <el-input v-model="form.imageUrl" placeholder="广告图片URL" />
+          <el-image
+            v-if="form.imageUrl"
+            :src="form.imageUrl"
+            fit="cover"
+            style="width: 200px; height: 120px; margin-top: 10px"
+          />
+        </el-form-item>
+
+        <el-form-item label="视频 URL">
+          <el-input v-model="form.videoUrl" placeholder="广告视频URL（视频类型时使用）" />
+        </el-form-item>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="链接类型" required>
+              <el-select v-model="form.linkType" style="width: 100%">
+                <el-option label="外部链接" value="URL" />
+                <el-option label="番剧详情" value="ANIME" />
+                <el-option label="搜索结果" value="SEARCH" />
+                <el-option label="无跳转" value="NONE" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="链接值">
+              <el-input v-model="form.linkValue" placeholder="URL地址/番剧ID/搜索关键词" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="开始时间" required>
+              <el-date-picker
+                v-model="form.startTime"
+                type="datetime"
+                placeholder="选择开始时间"
+                style="width: 100%"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="结束时间" required>
+              <el-date-picker
+                v-model="form.endTime"
+                type="datetime"
+                placeholder="选择结束时间"
+                style="width: 100%"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="优先级">
+              <el-input-number
+                v-model="form.priority"
+                :min="0"
+                placeholder="数字越大优先级越高"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="排序">
+              <el-input-number
+                v-model="form.sortOrder"
+                :min="0"
+                placeholder="数字越小越靠前"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="目标用户类型">
+              <el-select v-model="form.targetType" style="width: 100%">
+                <el-option label="全部用户" value="ALL" />
+                <el-option label="新用户" value="NEW" />
+                <el-option label="VIP用户" value="VIP" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态">
+              <el-select v-model="form.status" style="width: 100%">
+                <el-option label="启用" :value="1" />
+                <el-option label="禁用" :value="0" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 策略管理对话框 -->
+    <el-dialog
+      v-model="strategyModalVisible"
+      :title="`广告投放策略 - ${currentAdTitle}`"
+      width="800px"
+    >
+      <div class="strategy-header mb-3">
+        <el-button type="primary" size="small" @click="handleAddStrategy">
+          <el-icon><Plus /></el-icon>
+          新增策略
+        </el-button>
+      </div>
+
+      <el-table v-loading="strategyLoading" :data="strategies" border stripe>
+        <el-table-column label="类型" width="120">
+          <template #default="{ row }">
+            {{ getStrategyTypeName(row.strategyType) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="strategyValue" label="值" min-width="200" />
+        <el-table-column label="状态" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+              {{ row.status === 1 ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150">
+          <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="handleEditStrategy(row)">
+              编辑
+            </el-button>
+            <el-button link type="danger" size="small" @click="handleDeleteStrategy(row)">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-empty v-if="!strategyLoading && strategies.length === 0" description="暂无策略" />
+    </el-dialog>
+
+    <!-- 策略编辑对话框 -->
+    <el-dialog
+      v-model="strategyFormVisible"
+      :title="editingStrategyId ? '编辑策略' : '新增策略'"
+      width="500px"
+    >
+      <el-form :model="strategyForm" label-width="100px">
+        <el-form-item label="策略类型" required>
+          <el-select v-model="strategyForm.strategyType" placeholder="请选择" style="width: 100%">
+            <el-option label="时间定向" value="time" />
+            <el-option label="地区定向" value="region" />
+            <el-option label="设备定向" value="device" />
+            <el-option label="用户定向" value="user" />
+            <el-option label="频次控制" value="frequency" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="策略值" required>
+          <el-input v-model="strategyForm.strategyValue" placeholder="根据类型填写相应值" />
+          <div class="form-hint">
+            时间: 如 "09:00-18:00" | 地区: 如 "北京,上海" | 设备: 如 "ios,android" | 用户: 如
+            "vip,new" | 频次: 如 "3/day"
           </div>
-          
-          <div class="strategy-list">
-            <div v-if="strategyLoading" class="loading-text">加载中...</div>
-            <div v-else-if="strategies.length === 0" class="empty-text">暂无策略</div>
-            <div v-else class="strategy-items">
-              <div v-for="strategy in strategies" :key="strategy.id" class="strategy-item">
-                <div class="strategy-info">
-                  <div class="strategy-type">
-                    <span class="label">类型:</span>
-                    <span class="value">{{ getStrategyTypeName(strategy.strategyType) }}</span>
-                  </div>
-                  <div class="strategy-value">
-                    <span class="label">值:</span>
-                    <span class="value">{{ strategy.strategyValue || '-' }}</span>
-                  </div>
-                  <div class="strategy-status">
-                    <span :class="['status-tag', strategy.status === 1 ? 'status-normal' : 'status-disabled']">
-                      {{ strategy.status === 1 ? '启用' : '禁用' }}
-                    </span>
-                  </div>
-                </div>
-                <div class="strategy-actions">
-                  <button class="btn btn-ghost btn-sm" @click="handleEditStrategy(strategy)">编辑</button>
-                  <button class="btn btn-danger btn-sm" @click="handleDeleteStrategy(strategy)">删除</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        </el-form-item>
 
-    <!-- 策略编辑弹窗 -->
-    <div v-if="strategyFormVisible" class="modal-overlay" @click.self="strategyFormVisible = false">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 class="modal-title">{{ editingStrategyId ? '编辑策略' : '新增策略' }}</h3>
-          <button class="modal-close" @click="strategyFormVisible = false">×</button>
-        </div>
-        <div class="modal-body">
-          <form class="form" @submit.prevent="handleSubmitStrategy">
-            <div class="form-group">
-              <label class="form-label">策略类型 *</label>
-              <select v-model="strategyForm.strategyType" class="ctrl form-select" required>
-                <option value="">请选择</option>
-                <option value="time">时间定向</option>
-                <option value="region">地区定向</option>
-                <option value="device">设备定向</option>
-                <option value="user">用户定向</option>
-                <option value="frequency">频次控制</option>
-              </select>
-            </div>
+        <el-form-item label="状态">
+          <el-select v-model="strategyForm.status" style="width: 100%">
+            <el-option label="启用" :value="1" />
+            <el-option label="禁用" :value="0" />
+          </el-select>
+        </el-form-item>
+      </el-form>
 
-            <div class="form-group">
-              <label class="form-label">策略值 *</label>
-              <input v-model="strategyForm.strategyValue" type="text" class="ctrl form-input" placeholder="根据类型填写相应值" required />
-              <small class="form-hint">
-                时间: 如 "09:00-18:00" | 地区: 如 "北京,上海" | 设备: 如 "ios,android" | 用户: 如 "vip,new" | 频次: 如 "3/day"
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">状态</label>
-              <select v-model.number="strategyForm.status" class="ctrl form-select">
-                <option :value="1">启用</option>
-                <option :value="0">禁用</option>
-              </select>
-            </div>
-
-            <div v-if="strategyErrorMsg" class="error-msg">{{ strategyErrorMsg }}</div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="strategyFormVisible = false">取消</button>
-              <button type="submit" class="btn btn-primary" :disabled="strategySubmitting">
-                {{ strategySubmitting ? '保存中...' : '保存' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+      <template #footer>
+        <el-button @click="strategyFormVisible = false">取消</el-button>
+        <el-button type="primary" :loading="strategySubmitting" @click="handleSubmitStrategy">
+          保存
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { getAdList, createAd, updateAd, deleteAd } from '@/api/advertisement.js'
-import { getStrategiesByAdId, createStrategy, updateStrategy, deleteStrategy } from '@/api/adStrategy.js'
-import { getActivePositions } from '@/api/adPosition.js'
+<script setup lang="ts">
+  import { ref, reactive, onMounted } from 'vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { Plus } from '@element-plus/icons-vue'
+  import { getAdList, createAd, updateAd, deleteAd } from '@/api/advertisement'
+  import {
+    getStrategiesByAdId,
+    createStrategy,
+    updateStrategy,
+    deleteStrategy
+  } from '@/api/adStrategy'
+  import { getActivePositions } from '@/api/adPosition'
 
-const loading = ref(false)
-const list = ref([])
-const pagination = reactive({ current: 1, pageSize: 10, total: 0, pages: 1 })
-const searchForm = reactive({ positionCode: '', status: '' })
+  const loading = ref(false)
+  const list = ref<any[]>([])
+  const pagination = reactive({ current: 1, pageSize: 10, total: 0, pages: 1 })
+  const searchForm = reactive({ positionCode: '', status: '' })
 
-// 广告位列表
-const adPositions = ref([])
+  // 广告位列表
+  const adPositions = ref<any[]>([])
 
-const modalVisible = ref(false)
-const editingId = ref(null)
-const submitting = ref(false)
-const errorMsg = ref('')
+  const modalVisible = ref(false)
+  const editingId = ref<number | null>(null)
+  const submitting = ref(false)
 
-const form = reactive({
-  id: null,
-  positionCode: '',
-  title: '',
-  subtitle: '',
-  imageUrl: '',
-  videoUrl: '',
-  htmlContent: '',
-  linkType: 'URL',
-  linkValue: '',
-  startTime: '',
-  endTime: '',
-  targetType: 'ALL',
-  priority: 0,
-  status: 1,
-  sortOrder: 0,
-  extraData: ''
-})
-
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await getAdList({
-      pageNum: pagination.current,
-      pageSize: pagination.pageSize,
-      positionCode: searchForm.positionCode || undefined,
-      status: searchForm.status || undefined
-    })
-    if (res.code === 200) {
-      list.value = res.data.records
-      pagination.total = res.data.total
-      pagination.pages = res.data.pages
-    }
-  } catch (e) {
-    console.error('获取广告列表失败:', e)
-    errorMsg.value = '获取列表失败'
-  } finally {
-    loading.value = false
-  }
-}
-
-// 获取启用的广告位列表
-async function fetchAdPositions() {
-  try {
-    const res = await getActivePositions()
-    if (res.code === 200) {
-      adPositions.value = res.data || []
-    }
-  } catch (e) {
-    console.error('获取广告位列表失败:', e)
-  }
-}
-
-function handleSearch() {
-  pagination.current = 1
-  fetchList()
-}
-
-function handleReset() {
-  searchForm.positionCode = ''
-  searchForm.status = ''
-  handleSearch()
-}
-
-function handlePageChange(page) {
-  pagination.current = page
-  fetchList()
-}
-
-function handlePageSizeChange() {
-  pagination.current = 1
-  fetchList()
-}
-
-function handleAdd() {
-  editingId.value = null
-  Object.assign(form, {
+  const form = reactive({
     id: null,
     positionCode: '',
     title: '',
@@ -430,500 +388,338 @@ function handleAdd() {
     sortOrder: 0,
     extraData: ''
   })
-  errorMsg.value = ''
-  modalVisible.value = true
-}
 
-function handleEdit(item) {
-  editingId.value = item.id
-  Object.assign(form, {
-    id: item.id,
-    positionCode: item.positionCode || '',
-    title: item.title || '',
-    subtitle: item.subtitle || '',
-    imageUrl: item.imageUrl || '',
-    videoUrl: item.videoUrl || '',
-    htmlContent: item.htmlContent || '',
-    linkType: item.linkType || 'URL',
-    linkValue: item.linkValue || '',
-    startTime: formatDateTimeLocal(item.startTime),
-    endTime: formatDateTimeLocal(item.endTime),
-    targetType: item.targetType || 'ALL',
-    priority: item.priority || 0,
-    status: item.status !== undefined ? item.status : 1,
-    sortOrder: item.sortOrder || 0,
-    extraData: item.extraData || ''
-  })
-  errorMsg.value = ''
-  modalVisible.value = true
-}
-
-async function handleSubmit() {
-  submitting.value = true
-  errorMsg.value = ''
-  try {
-    const payload = { 
-      ...form,
-      priority: Number(form.priority) || 0,
-      sortOrder: Number(form.sortOrder) || 0,
-      status: Number(form.status)
-    }
-    
-    // 移除空字符串字段
-    Object.keys(payload).forEach(key => {
-      if (payload[key] === '') {
-        payload[key] = null
+  async function fetchList() {
+    loading.value = true
+    try {
+      const res = await getAdList({
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize,
+        positionCode: searchForm.positionCode || undefined,
+        status: searchForm.status || undefined
+      })
+      if (res.code === 200) {
+        list.value = res.data.records
+        pagination.total = res.data.total
+        pagination.pages = res.data.pages
       }
+    } catch (e: any) {
+      console.error('获取广告列表失败:', e)
+      ElMessage.error('获取列表失败')
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 获取启用的广告位列表
+  async function fetchAdPositions() {
+    try {
+      const res = await getActivePositions()
+      if (res.code === 200) {
+        adPositions.value = res.data || []
+      }
+    } catch (e: any) {
+      console.error('获取广告位列表失败:', e)
+    }
+  }
+
+  function handleSearch() {
+    pagination.current = 1
+    fetchList()
+  }
+
+  function handleReset() {
+    searchForm.positionCode = ''
+    searchForm.status = ''
+    pagination.current = 1
+    fetchList()
+  }
+
+  function handlePageChange(page: number) {
+    pagination.current = page
+    fetchList()
+  }
+
+  function handlePageSizeChange() {
+    pagination.current = 1
+    fetchList()
+  }
+
+  function handleAdd() {
+    editingId.value = null
+    resetForm()
+    modalVisible.value = true
+  }
+
+  function handleEdit(item: any) {
+    editingId.value = item.id
+    Object.assign(form, {
+      id: item.id,
+      positionCode: item.positionCode,
+      title: item.title,
+      subtitle: item.subtitle || '',
+      imageUrl: item.imageUrl,
+      videoUrl: item.videoUrl || '',
+      htmlContent: item.htmlContent || '',
+      linkType: item.linkType,
+      linkValue: item.linkValue || '',
+      startTime: item.startTime,
+      endTime: item.endTime,
+      targetType: item.targetType,
+      priority: item.priority || 0,
+      status: item.status,
+      sortOrder: item.sortOrder || 0,
+      extraData: item.extraData || ''
     })
-    
-    if (editingId.value) {
-      await updateAd(editingId.value, payload)
-    } else {
-      delete payload.id
-      await createAd(payload)
+    modalVisible.value = true
+  }
+
+  function resetForm() {
+    Object.assign(form, {
+      id: null,
+      positionCode: '',
+      title: '',
+      subtitle: '',
+      imageUrl: '',
+      videoUrl: '',
+      htmlContent: '',
+      linkType: 'URL',
+      linkValue: '',
+      startTime: '',
+      endTime: '',
+      targetType: 'ALL',
+      priority: 0,
+      status: 1,
+      sortOrder: 0,
+      extraData: ''
+    })
+  }
+
+  async function handleSubmit() {
+    try {
+      submitting.value = true
+      if (editingId.value) {
+        await updateAd(editingId.value, form)
+        ElMessage.success('更新成功')
+      } else {
+        await createAd(form)
+        ElMessage.success('创建成功')
+      }
+      modalVisible.value = false
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '保存失败')
+    } finally {
+      submitting.value = false
     }
-    modalVisible.value = false
-    fetchList()
-  } catch (e) {
-    errorMsg.value = e?.response?.data?.message || '操作失败'
-  } finally {
-    submitting.value = false
   }
-}
 
-async function handleToggleStatus(item) {
-  try {
-    const newStatus = item.status === 1 ? 0 : 1
-    await updateAd(item.id, { ...item, status: newStatus })
-    fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '操作失败')
-  }
-}
-
-async function handleDelete(item) {
-  if (!confirm(`确定删除广告 "${item.title}"？`)) return
-  try {
-    await deleteAd(item.id)
-    fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '删除失败')
-  }
-}
-
-function formatDate(d) {
-  if (!d) return '-'
-  return new Date(d).toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
-}
-
-function formatDateTimeLocal(dateStr) {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-}
-
-function truncateText(text, maxLength) {
-  if (!text) return '-'
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength) + '...'
-}
-
-// 策略管理相关
-const strategyModalVisible = ref(false)
-const strategyFormVisible = ref(false)
-const strategyLoading = ref(false)
-const strategySubmitting = ref(false)
-const strategyErrorMsg = ref('')
-const currentAdId = ref(null)
-const currentAdTitle = ref('')
-const editingStrategyId = ref(null)
-const strategies = ref([])
-const strategyForm = reactive({
-  id: null,
-  adId: null,
-  strategyType: '',
-  strategyValue: '',
-  status: 1
-})
-
-async function handleManageStrategy(item) {
-  currentAdId.value = item.id
-  currentAdTitle.value = item.title
-  strategyModalVisible.value = true
-  await fetchStrategies()
-}
-
-async function fetchStrategies() {
-  strategyLoading.value = true
-  try {
-    const res = await getStrategiesByAdId(currentAdId.value)
-    if (res.code === 200) {
-      strategies.value = res.data || []
+  async function handleToggleStatus(item: any) {
+    try {
+      const newStatus = item.status === 1 ? 0 : 1
+      await updateAd(item.id, { ...item, status: newStatus })
+      ElMessage.success(newStatus === 1 ? '已启用' : '已禁用')
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '操作失败')
     }
-  } catch (e) {
-    console.error('获取策略列表失败:', e)
-  } finally {
-    strategyLoading.value = false
   }
-}
 
-function handleAddStrategy() {
-  editingStrategyId.value = null
-  Object.assign(strategyForm, {
-    id: null,
-    adId: currentAdId.value,
+  async function handleDelete(item: any) {
+    try {
+      await ElMessageBox.confirm(`确定删除广告 "${item.title}"？`, '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      await deleteAd(item.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    } catch (e: any) {
+      if (e !== 'cancel') {
+        ElMessage.error(e.message || '删除失败')
+      }
+    }
+  }
+
+  function truncateText(text: string, maxLength: number) {
+    if (!text) {
+      return '-'
+    }
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+  }
+
+  function formatDate(dateStr: string) {
+    if (!dateStr) {
+      return '-'
+    }
+    const date = new Date(dateStr)
+    return date.toLocaleString('zh-CN')
+  }
+
+  // 策略管理
+  const strategyModalVisible = ref(false)
+  const strategyFormVisible = ref(false)
+  const strategyLoading = ref(false)
+  const strategies = ref<any[]>([])
+  const currentAdId = ref<number | null>(null)
+  const currentAdTitle = ref('')
+  const editingStrategyId = ref<number | null>(null)
+  const strategySubmitting = ref(false)
+
+  const strategyForm = reactive({
     strategyType: '',
     strategyValue: '',
     status: 1
   })
-  strategyErrorMsg.value = ''
-  strategyFormVisible.value = true
-}
 
-function handleEditStrategy(strategy) {
-  editingStrategyId.value = strategy.id
-  Object.assign(strategyForm, {
-    id: strategy.id,
-    adId: strategy.adId,
-    strategyType: strategy.strategyType || '',
-    strategyValue: strategy.strategyValue || '',
-    status: strategy.status !== undefined ? strategy.status : 1
+  async function handleManageStrategy(item: any) {
+    currentAdId.value = item.id
+    currentAdTitle.value = item.title
+    strategyModalVisible.value = true
+    await fetchStrategies()
+  }
+
+  async function fetchStrategies() {
+    if (!currentAdId.value) {
+      return
+    }
+    strategyLoading.value = true
+    try {
+      const res = await getStrategiesByAdId(currentAdId.value)
+      if (res.code === 200) {
+        strategies.value = res.data || []
+      }
+    } catch (e: any) {
+      console.error('获取策略列表失败:', e)
+    } finally {
+      strategyLoading.value = false
+    }
+  }
+
+  function handleAddStrategy() {
+    editingStrategyId.value = null
+    Object.assign(strategyForm, {
+      strategyType: '',
+      strategyValue: '',
+      status: 1
+    })
+    strategyFormVisible.value = true
+  }
+
+  function handleEditStrategy(strategy: any) {
+    editingStrategyId.value = strategy.id
+    Object.assign(strategyForm, {
+      strategyType: strategy.strategyType,
+      strategyValue: strategy.strategyValue,
+      status: strategy.status
+    })
+    strategyFormVisible.value = true
+  }
+
+  async function handleSubmitStrategy() {
+    try {
+      strategySubmitting.value = true
+      if (editingStrategyId.value && currentAdId.value) {
+        await updateStrategy(editingStrategyId.value, {
+          adId: currentAdId.value,
+          ...strategyForm
+        })
+        ElMessage.success('更新成功')
+      } else if (currentAdId.value) {
+        await createStrategy({
+          adId: currentAdId.value,
+          ...strategyForm
+        })
+        ElMessage.success('创建成功')
+      }
+      strategyFormVisible.value = false
+      await fetchStrategies()
+    } catch (e: any) {
+      ElMessage.error(e.message || '保存失败')
+    } finally {
+      strategySubmitting.value = false
+    }
+  }
+
+  async function handleDeleteStrategy(strategy: any) {
+    try {
+      await ElMessageBox.confirm(`确定删除该策略？`, '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      await deleteStrategy(strategy.id)
+      ElMessage.success('删除成功')
+      await fetchStrategies()
+    } catch (e: any) {
+      if (e !== 'cancel') {
+        ElMessage.error(e.message || '删除失败')
+      }
+    }
+  }
+
+  function getStrategyTypeName(type: string) {
+    const types: Record<string, string> = {
+      time: '时间定向',
+      region: '地区定向',
+      device: '设备定向',
+      user: '用户定向',
+      frequency: '频次控制'
+    }
+    return types[type] || type
+  }
+
+  onMounted(() => {
+    fetchList()
+    fetchAdPositions()
   })
-  strategyErrorMsg.value = ''
-  strategyFormVisible.value = true
-}
-
-async function handleSubmitStrategy() {
-  strategySubmitting.value = true
-  strategyErrorMsg.value = ''
-  try {
-    const payload = {
-      ...strategyForm,
-      adId: currentAdId.value,
-      status: Number(strategyForm.status)
-    }
-    
-    if (editingStrategyId.value) {
-      await updateStrategy(editingStrategyId.value, payload)
-    } else {
-      delete payload.id
-      await createStrategy(payload)
-    }
-    strategyFormVisible.value = false
-    await fetchStrategies()
-  } catch (e) {
-    strategyErrorMsg.value = e?.response?.data?.message || '操作失败'
-  } finally {
-    strategySubmitting.value = false
-  }
-}
-
-async function handleDeleteStrategy(strategy) {
-  if (!confirm(`确定删除该策略？`)) return
-  try {
-    await deleteStrategy(strategy.id)
-    await fetchStrategies()
-  } catch (e) {
-    alert(e?.response?.data?.message || '删除失败')
-  }
-}
-
-function getStrategyTypeName(type) {
-  const typeMap = {
-    time: '时间定向',
-    region: '地区定向',
-    device: '设备定向',
-    user: '用户定向',
-    frequency: '频次控制'
-  }
-  return typeMap[type] || type || '-'
-}
-
-onMounted(() => {
-  fetchList()
-  fetchAdPositions()
-})
 </script>
 
 <style scoped>
-.ad-management { padding: 32px; }              /* 加大内边距 */
+  .ad-management {
+    padding: 24px;
+  }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;                 /* 加大底部间距 */
-}
+  .search-card,
+  .table-card {
+    margin-bottom: 20px;
+  }
 
-.page-title {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  font-size: 24px;                     /* 统一标题大小 */
-  font-weight: 600;                    /* 统一字重 */
-  color: var(--text);                  /* 主文字 #1d1d1f - 清晰可见 */
-  margin: 0;
-  letter-spacing: -0.2px;
-}
+  .subtitle {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    margin-top: 4px;
+  }
 
-.search-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
+  .link-text {
+    color: var(--el-color-primary);
+    text-decoration: none;
+  }
 
-.search-input { min-width: 150px; }
-.search-select { min-width: 130px; }
+  .link-text:hover {
+    text-decoration: underline;
+  }
 
-.table-container {
-  background: var(--card);             /* 白色背景 */
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
 
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table thead { background: var(--bg); }  /* 浅灰表头背景 */
-.data-table th {
-  padding: 14px 16px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--secondary);             /* 次要文字 #86868b */
-  letter-spacing: -0.1px;
-  border-bottom: 1px solid var(--border);
-}
-.data-table td {
-  padding: 14px 16px;
-  font-size: 15px;                     /* 统一字体大小 */
-  color: var(--text);                  /* 主文字 #1d1d1f */
-  border-bottom: 1px solid var(--border);
-}
-.data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover { background: rgba(0, 0, 0, 0.02); }  /* 悬停效果 */
-.loading-cell, .empty-cell { text-align: center; padding: 40px 16px; color: var(--secondary); }
+  .form-hint {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    margin-top: 5px;
+  }
 
-.actions { display: flex; gap: 8px; }
+  .mb-3 {
+    margin-bottom: 15px;
+  }
 
-.title-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.subtitle {
-  font-size: 12px;
-  color: var(--secondary);             /* 次要文字 */
-}
-
-.ad-thumb {
-  width: 80px;
-  height: 45px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.link-text {
-  color: #3b82f6;
-  text-decoration: none;
-}
-.link-text:hover {
-  text-decoration: underline;
-}
-
-.sort-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-  background: rgba(0, 113, 227, 0.12); /* 苹果蓝背景 */
-  color: var(--accent);                /* 苹果蓝文字 */
-}
-
-.status-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-}
-.status-normal { background: rgba(52, 199, 89, 0.12); color: var(--success); }   /* 成功绿 */
-.status-disabled { background: rgba(255, 59, 48, 0.12); color: var(--danger); }  /* 危险红 */
-
-.stats-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--secondary);             /* 次要文字 */
-}
-
-.time-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 20px;
-}
-.page-info { font-size: 14px; color: var(--secondary); }  /* 次要文字 */
-.page-size-select { padding: 8px 12px; font-size: 14px; }
-
-/* 弹窗 - Apple 风格 */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);      /* 弱化遮罩 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);         /* 毛玻璃效果 */
-}
-.modal {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 28px;                 /* 28px 圆角 */
-  width: 90%;
-  max-width: 720px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);  /* 柔和阴影 */
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 28px;                  /* 加大内边距 */
-  border-bottom: 1px solid var(--border);
-}
-.modal-title { 
-  font-size: 20px; 
-  font-weight: 600; 
-  color: var(--text);                  /* 主文字 #1d1d1f */
-  margin: 0;
-  letter-spacing: -0.2px;
-}
-.modal-close {
-  width: 32px; height: 32px;
-  border: none; background: rgba(0, 0, 0, 0.06); color: var(--secondary);
-  font-size: 20px; cursor: pointer; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.modal-close:hover { background: rgba(0, 0, 0, 0.1); color: var(--text); }
-.modal-body { padding: 28px; }         /* 加大内边距 */
-
-.form { display: flex; flex-direction: column; gap: 16px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-label { font-size: 13px; font-weight: 500; color: var(--text); }
-.form-input, .form-select { padding: 10px 14px; font-size: 14px; }
-
-.image-preview {
-  margin-top: 8px;
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
-.error-msg {
-  color: var(--danger);                /* 危险色 #ff3b30 */
-  font-size: 13px;
-  padding: 8px; 
-  background: rgba(255, 59, 48, 0.12); 
-  border-radius: 8px;
-}
-.btn-icon { font-size: 16px; margin-right: 4px; }
-
-/* 策略管理样式 */
-.modal-large {
-  max-width: 900px;
-}
-
-.strategy-header {
-  margin-bottom: 20px;
-}
-
-.strategy-list {
-  min-height: 200px;
-}
-
-.loading-text, .empty-text {
-  text-align: center;
-  padding: 40px;
-  color: var(--sub);
-}
-
-.strategy-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.strategy-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.strategy-item:hover {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(99,102,241,0.3);
-}
-
-.strategy-info {
-  display: flex;
-  gap: 24px;
-  flex: 1;
-}
-
-.strategy-type, .strategy-value, .strategy-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.strategy-type .label,
-.strategy-value .label {
-  font-size: 13px;
-  color: var(--sub);
-  font-weight: 500;
-}
-
-.strategy-type .value,
-.strategy-value .value {
-  font-size: 14px;
-  color: var(--text);
-}
-
-.strategy-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.form-hint {
-  font-size: 12px;
-  color: var(--sub);
-  margin-top: 4px;
-  line-height: 1.5;
-}
+  .strategy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 </style>

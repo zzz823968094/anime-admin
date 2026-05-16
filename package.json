@@ -8,17 +8,33 @@
     "dev:prod": "vite --mode production",
     "build": "vite build --mode development",
     "build:prod": "vite build --mode production",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-pattern 'dist/*' --ignore-pattern 'node_modules/*'",
+    "format": "prettier --write src/"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.6.8",
     "echarts": "^5.5.0",
+    "element-plus": "^2.14.0",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.8.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
     "@vitejs/plugin-vue": "^5.0.4",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-vue": "^10.9.1",
+    "prettier": "^3.8.3",
     "sass": "^1.99.0",
+    "terser": "^5.47.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.3",
     "vite": "^5.2.8"
   }
 }

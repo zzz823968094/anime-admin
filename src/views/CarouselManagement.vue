@@ -1,681 +1,555 @@
 <template>
   <div class="carousel-management">
+    <!-- 搜索栏 -->
+    <el-card shadow="never" class="search-card">
+      <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form-item label="类型">
+          <el-select
+            v-model="searchForm.type"
+            placeholder="全部类型"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="视频" value="video" />
+            <el-option label="广告" value="ad" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select
+            v-model="searchForm.status"
+            placeholder="全部状态"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="启用" value="enabled" />
+            <el-option label="禁用" value="disabled" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>
+            新增轮播图
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-    <div class="search-bar">
-      <select v-model="searchForm.type" class="ctrl search-select" @change="handleSearch">
-        <option value="">全部类型</option>
-        <option value="video">视频</option>
-        <option value="ad">广告</option>
-      </select>
-      <select v-model="searchForm.status" class="ctrl search-select" @change="handleSearch">
-        <option value="">全部状态</option>
-        <option value="enabled">启用</option>
-        <option value="disabled">禁用</option>
-      </select>
-      <button class="btn btn-primary" @click="handleSearch">搜索</button>
-      <button class="btn btn-secondary" @click="handleReset">重置</button>
-      <button class="btn btn-primary btn-sm btn-add" @click="handleAdd">
-        <svg style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        新增轮播图
-      </button>
-    </div>
+    <!-- 表格 -->
+    <el-card shadow="never" class="table-card">
+      <el-table v-loading="loading" :data="list" border stripe style="width: 100%">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="sortOrder" label="排序" width="80">
+          <template #default="{ row }">
+            <el-tag size="small">{{ row.sortOrder }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="视频ID" min-width="200">
+          <template #default="{ row }">
+            <div v-if="row.videoName" class="video-info-cell">
+              <el-image :src="row.videoCover" class="video-thumb" fit="cover" />
+              <span>{{ row.videoName }}</span>
+            </div>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="类型" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.type === 'video' ? 'success' : 'warning'" size="small">
+              {{ row.type === 'video' ? '视频' : '广告' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'enabled' ? 'success' : 'info'" size="small">
+              {{ row.status === 'enabled' ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" min-width="160">
+          <template #default="{ row }">
+            {{ formatDate(row.createTime) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="修改时间" min-width="160">
+          <template #default="{ row }">
+            {{ formatDate(row.updateTime) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button
+              link
+              :type="row.status === 'enabled' ? 'warning' : 'success'"
+              size="small"
+              @click="handleToggleStatus(row)"
+            >
+              {{ row.status === 'enabled' ? '禁用' : '启用' }}
+            </el-button>
+            <el-button link type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-    <div class="table-container">
-      <!-- 表格右上角操作区 -->
-      <div class="table-actions">
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handlePageSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
-
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>排序</th>
-            <th>视频ID</th>
-            <th>类型</th>
-            <th>状态</th>
-            <th>创建时间</th>
-            <th>修改时间</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="8" class="loading-cell">加载中...</td>
-          </tr>
-          <tr v-else-if="list.length === 0">
-            <td colspan="8" class="empty-cell">暂无数据</td>
-          </tr>
-          <tr v-else v-for="item in list" :key="item.id">
-            <td>{{ item.id }}</td>
-            <td>
-              <span class="sort-badge">{{ item.sortOrder }}</span>
-            </td>
-            <td>
-              <div v-if="item.videoName" class="video-info-cell">
-                <img :src="item.videoCover" class="video-thumb" alt="封面" />
-                <span>{{ item.videoName }}</span>
-              </div>
-              <span v-else>-</span>
-            </td>
-            <td>
-              <span :class="['type-tag', item.type === 'video' ? 'type-video' : 'type-ad']">
-                {{ item.type === 'video' ? '视频' : '广告' }}
-              </span>
-            </td>
-            <td>
-              <span :class="['status-tag', item.status === 'enabled' ? 'status-normal' : 'status-disabled']">
-                {{ item.status === 'enabled' ? '启用' : '禁用' }}
-              </span>
-            </td>
-            <td>{{ formatDate(item.createTime) }}</td>
-            <td>{{ formatDate(item.updateTime) }}</td>
-            <td class="actions">
-              <button class="btn btn-ghost btn-sm" @click="handleEdit(item)">编辑</button>
-              <button
-                class="btn btn-sm"
-                :class="item.status === 'enabled' ? 'btn-warning' : 'btn-success'"
-                @click="handleToggleStatus(item)"
-              >{{ item.status === 'enabled' ? '禁用' : '启用' }}</button>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(item)">删除</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-if="pagination.total > 0" class="pagination">
-      <button class="btn btn-sm" :disabled="pagination.current === 1" @click="handlePageChange(pagination.current - 1)">上一页</button>
-      <span class="page-info">第 {{ pagination.current }} / {{ pagination.pages }} 页，共 {{ pagination.total }} 条</span>
-      <button class="btn btn-sm" :disabled="pagination.current === pagination.pages" @click="handlePageChange(pagination.current + 1)">下一页</button>
-      <select class="ctrl page-size-select" v-model.number="pagination.pageSize" @change="handlePageSizeChange">
-        <option :value="10">10条/页</option>
-        <option :value="20">20条/页</option>
-        <option :value="50">50条/页</option>
-      </select>
-    </div>
+    </el-card>
 
     <!-- 新增/编辑弹窗 -->
-    <div v-if="modalVisible" class="modal-overlay" @click.self="modalVisible = false">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 class="modal-title">{{ editingId ? '编辑轮播图' : '新增轮播图' }}</h3>
-          <button class="modal-close" @click="modalVisible = false">×</button>
-        </div>
-        <div class="modal-body">
-          <form class="form" @submit.prevent="handleSubmit">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">排序 *</label>
-                <input v-model.number="form.sortOrder" type="number" class="ctrl form-input" placeholder="数字越小越靠前" required min="0" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">类型 *</label>
-                <select v-model="form.type" class="ctrl form-select" required>
-                  <option value="video">视频</option>
-                  <option value="ad">广告</option>
-                </select>
-              </div>
+    <el-dialog
+      v-model="modalVisible"
+      :title="editingId ? '编辑轮播图' : '新增轮播图'"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="form" label-width="100px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="排序" required>
+              <el-input-number v-model="form.sortOrder" :min="0" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="类型" required>
+              <el-select v-model="form.type" style="width: 100%">
+                <el-option label="视频" value="video" />
+                <el-option label="广告" value="ad" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="视频">
+          <!-- 已选择的视频显示 -->
+          <div v-if="selectedAnime" class="selected-anime">
+            <el-image :src="selectedAnime.vodPic" class="anime-cover" fit="cover" />
+            <div class="anime-info">
+              <div class="anime-name">{{ selectedAnime.vodName }}</div>
+              <el-button link type="danger" @click="clearSelectedAnime">
+                <el-icon><Close /></el-icon>
+              </el-button>
             </div>
-            <div class="form-group">
-              <label class="form-label">视频（可选）</label>
-              <!-- 已选择的视频显示 -->
-              <div v-if="selectedAnime" class="selected-anime">
-                <img :src="selectedAnime.vodPic" class="anime-cover" alt="封面" />
-                <div class="anime-info">
-                  <div class="anime-name">{{ selectedAnime.vodName }}</div>
-                  <button type="button" class="btn-clear" @click="clearSelectedAnime">×</button>
-                </div>
-              </div>
-              
-              <!-- 搜索框 -->
-              <div v-else class="anime-search-box">
-                <div class="search-input-group">
-                  <input 
-                    v-model="animeSearchKeyword" 
-                    type="text" 
-                    class="ctrl form-input" 
-                    placeholder="输入番剧名称搜索"
-                    @keyup.enter="searchAnime"
-                  />
-                  <button type="button" class="btn btn-primary btn-search" @click="searchAnime" :disabled="isSearching">
-                    {{ isSearching ? '搜索中...' : '搜索' }}
-                  </button>
-                </div>
-                
-                <!-- 搜索结果下拉 -->
-                <div v-if="animeSearchResults.length > 0" class="search-results">
-                  <div 
-                    v-for="anime in animeSearchResults" 
-                    :key="anime.id" 
-                    class="search-result-item"
-                    @click="selectAnime(anime)"
-                  >
-                    <img :src="anime.vodPic" class="result-cover" alt="封面" />
-                    <span class="result-name">{{ anime.vodName }}</span>
-                  </div>
-                </div>
-                <div v-if="isSearching" class="search-loading">搜索中...</div>
+          </div>
+
+          <!-- 搜索框 -->
+          <div v-else class="anime-search-box">
+            <el-input
+              v-model="animeSearchKeyword"
+              placeholder="输入番剧名称搜索"
+              clearable
+              @keyup.enter="searchAnime"
+            >
+              <template #append>
+                <el-button :loading="isSearching" @click="searchAnime">搜索</el-button>
+              </template>
+            </el-input>
+
+            <!-- 搜索结果下拉 -->
+            <div v-if="animeSearchResults.length > 0" class="search-results">
+              <div
+                v-for="anime in animeSearchResults"
+                :key="anime.id"
+                class="search-result-item"
+                @click="selectAnime(anime)"
+              >
+                <el-image :src="anime.vodPic" class="result-cover" fit="cover" />
+                <span class="result-name">{{ anime.vodName }}</span>
               </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">状态</label>
-              <select v-model="form.status" class="ctrl form-select">
-                <option value="enabled">启用</option>
-                <option value="disabled">禁用</option>
-              </select>
-            </div>
-            <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="modalVisible = false">取消</button>
-              <button type="submit" class="btn btn-primary" :disabled="submitting">
-                {{ submitting ? '保存中...' : '保存' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="状态">
+          <el-select v-model="form.status" style="width: 100%">
+            <el-option label="启用" value="enabled" />
+            <el-option label="禁用" value="disabled" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { getCarouselList, createCarousel, updateCarousel, deleteCarousel, enableCarousel, disableCarousel } from '@/api/carousel.js'
-import { getAnimeList } from '@/utils/api.js'
+<script setup lang="ts">
+  import { ref, reactive, onMounted } from 'vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { Plus, Close } from '@element-plus/icons-vue'
+  import {
+    getCarouselList,
+    createCarousel,
+    updateCarousel,
+    deleteCarousel,
+    enableCarousel,
+    disableCarousel
+  } from '@/api/carousel'
+  import { getAnimeList } from '@/utils/api'
+  import type { Carousel } from '@/types/api'
 
-const loading = ref(false)
-const list = ref([])
-const pagination = reactive({ current: 1, pageSize: 10, total: 0, pages: 1 })
-const searchForm = reactive({ type: '', status: '' })
+  const loading = ref(false)
+  const list = ref<Carousel[]>([])
+  const pagination = reactive({ current: 1, pageSize: 10, total: 0 })
+  const searchForm = reactive({ type: '', status: '' })
 
-const modalVisible = ref(false)
-const editingId = ref(null)
-const submitting = ref(false)
-const errorMsg = ref('')
+  const modalVisible = ref(false)
+  const editingId = ref<number | null>(null)
+  const submitting = ref(false)
 
-// 视频搜索相关
-const animeSearchKeyword = ref('')
-const animeSearchResults = ref([])
-const isSearching = ref(false)
-const selectedAnime = ref(null)
-const form = reactive({
-  sortOrder: 0,
-  videoId: '',
-  videoName: '',
-  videoCover: '',
-  type: 'video',
-  status: 'enabled',
-})
+  // 视频搜索相关
+  const animeSearchKeyword = ref('')
+  const animeSearchResults = ref<any[]>([])
+  const isSearching = ref(false)
+  const selectedAnime = ref<any>(null)
 
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await getCarouselList({
-      pageNum: pagination.current,
-      pageSize: pagination.pageSize,
-      type: searchForm.type || undefined,
-      status: searchForm.status || undefined,
-    })
-    console.log(res)
-    if (res.code === 200) {
-      list.value = res.data.records
-      pagination.total = res.data.total
-      pagination.pages = res.data.pages
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  pagination.current = 1
-  fetchList()
-}
-
-function handleReset() {
-  searchForm.type = ''
-  searchForm.status = ''
-  handleSearch()
-}
-
-function handlePageChange(page) {
-  pagination.current = page
-  fetchList()
-}
-
-function handlePageSizeChange() {
-  pagination.current = 1
-  fetchList()
-}
-
-function handleAdd() {
-  editingId.value = null
-  Object.assign(form, { 
-    sortOrder: 0, 
-    videoId: '', 
+  const form = reactive({
+    sortOrder: 0,
+    videoId: '',
     videoName: '',
     videoCover: '',
-    type: 'video', 
-    status: 'enabled' 
+    type: 'video',
+    status: 'enabled'
   })
-  selectedAnime.value = null
-  animeSearchKeyword.value = ''
-  animeSearchResults.value = []
-  errorMsg.value = ''
-  modalVisible.value = true
-}
 
-function handleEdit(item) {
-  editingId.value = item.id
-  Object.assign(form, {
-    sortOrder: item.sortOrder,
-    videoId: item.videoId || '',
-    videoName: item.videoName || '',
-    videoCover: item.videoCover || '',
-    type: item.type,
-    status: item.status,
-  })
-  
-  // 如果有视频ID和视频信息，显示已选择的视频
-  if (item.videoId && item.videoName) {
-    selectedAnime.value = {
-      id: item.videoId,
-      vodName: item.videoName,
-      vodPic: item.videoCover
+  async function fetchList() {
+    loading.value = true
+    try {
+      const res = await getCarouselList({
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize,
+        type: searchForm.type || undefined,
+        status: searchForm.status || undefined
+      })
+      list.value = res.data.list || []
+      pagination.total = res.data.total
+    } catch (error: any) {
+      ElMessage.error(error.message || '加载失败')
+    } finally {
+      loading.value = false
     }
-  } else {
+  }
+
+  function handleSearch() {
+    pagination.current = 1
+    fetchList()
+  }
+
+  function handleReset() {
+    searchForm.type = ''
+    searchForm.status = ''
+    handleSearch()
+  }
+
+  function handlePageChange(page: number) {
+    pagination.current = page
+    fetchList()
+  }
+
+  function handlePageSizeChange(size: number) {
+    pagination.pageSize = size
+    pagination.current = 1
+    fetchList()
+  }
+
+  function handleAdd() {
+    editingId.value = null
+    Object.assign(form, {
+      sortOrder: 0,
+      videoId: '',
+      videoName: '',
+      videoCover: '',
+      type: 'video',
+      status: 'enabled'
+    })
+    selectedAnime.value = null
+    animeSearchKeyword.value = ''
+    animeSearchResults.value = []
+    modalVisible.value = true
+  }
+
+  function handleEdit(item: Carousel) {
+    editingId.value = item.id
+    Object.assign(form, {
+      sortOrder: item.sortOrder,
+      videoId: item.videoId || '',
+      videoName: item.videoName || '',
+      videoCover: item.videoCover || '',
+      type: item.type,
+      status: item.status
+    })
+
+    // 如果有视频ID和视频信息，显示已选择的视频
+    if (item.videoId && item.videoName) {
+      selectedAnime.value = {
+        id: item.videoId,
+        vodName: item.videoName,
+        vodPic: item.videoCover
+      }
+    } else {
+      selectedAnime.value = null
+    }
+
+    modalVisible.value = true
+  }
+
+  // 搜索番剧
+  async function searchAnime() {
+    if (!animeSearchKeyword.value.trim()) {
+      animeSearchResults.value = []
+      return
+    }
+
+    isSearching.value = true
+    try {
+      const res = await getAnimeList({
+        keyword: animeSearchKeyword.value.trim(),
+        page: 1,
+        size: 10
+      })
+      animeSearchResults.value = res.data.list || []
+    } catch (e: any) {
+      ElMessage.error(e.message || '搜索失败')
+      animeSearchResults.value = []
+    } finally {
+      isSearching.value = false
+    }
+  }
+
+  // 选择番剧
+  function selectAnime(anime: any) {
+    form.videoId = String(anime.id)
+    form.videoName = anime.vodName || ''
+    form.videoCover = anime.vodPic || ''
+    selectedAnime.value = anime
+    animeSearchResults.value = []
+    animeSearchKeyword.value = ''
+  }
+
+  // 清除选择的番剧
+  function clearSelectedAnime() {
+    form.videoId = ''
+    form.videoName = ''
+    form.videoCover = ''
     selectedAnime.value = null
   }
-  
-  errorMsg.value = ''
-  modalVisible.value = true
-}
 
-// 搜索番剧
-async function searchAnime() {
-  if (!animeSearchKeyword.value.trim()) {
-    animeSearchResults.value = []
-    return
-  }
-  
-  isSearching.value = true
-  try {
-    const res = await getAnimeList({ 
-      keyword: animeSearchKeyword.value.trim(),
-      page: 1,
-      size: 10
-    })
-    animeSearchResults.value = res.data.records || []
-  } catch (e) {
-    console.error('搜索番剧失败', e)
-    animeSearchResults.value = []
-  } finally {
-    isSearching.value = false
-  }
-}
-// 选择番剧
-function selectAnime(anime) {
-  form.videoId = String(anime.id)
-  form.videoName = anime.vodName || ''
-  form.videoCover = anime.vodPic || ''
-  selectedAnime.value = anime
-  animeSearchResults.value = []
-  animeSearchKeyword.value = ''
-}
-
-// 清除选择的番剧
-function clearSelectedAnime() {
-  form.videoId = ''
-  form.videoName = ''
-  form.videoCover = ''
-  selectedAnime.value = null
-}
-
-async function handleSubmit() {
-  submitting.value = true
-  errorMsg.value = ''
-  try {
-    const payload = { 
-      ...form, 
-      videoId: form.videoId || null,
-      videoName: form.videoName || null,
-      videoCover: form.videoCover || null
+  async function handleSubmit() {
+    submitting.value = true
+    try {
+      const payload = {
+        ...form,
+        videoId: form.videoId || null,
+        videoName: form.videoName || null,
+        videoCover: form.videoCover || null
+      }
+      if (editingId.value) {
+        await updateCarousel(editingId.value, payload)
+        ElMessage.success('更新成功')
+      } else {
+        await createCarousel(payload)
+        ElMessage.success('创建成功')
+      }
+      modalVisible.value = false
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '操作失败')
+    } finally {
+      submitting.value = false
     }
-    if (editingId.value) {
-      await updateCarousel(editingId.value, payload)
-    } else {
-      await createCarousel(payload)
+  }
+
+  async function handleToggleStatus(item: Carousel) {
+    try {
+      if (item.status === 'enabled') {
+        await disableCarousel(item.id)
+        ElMessage.success('已禁用')
+      } else {
+        await enableCarousel(item.id)
+        ElMessage.success('已启用')
+      }
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '操作失败')
     }
-    modalVisible.value = false
-    fetchList()
-  } catch (e) {
-    errorMsg.value = e?.response?.data?.message || '操作失败'
-  } finally {
-    submitting.value = false
   }
-}
 
-async function handleToggleStatus(item) {
-  try {
-    if (item.status === 'enabled') {
-      await disableCarousel(item.id)
-    } else {
-      await enableCarousel(item.id)
+  async function handleDelete(item: Carousel) {
+    try {
+      await ElMessageBox.confirm(`确定删除排序为 ${item.sortOrder} 的轮播图？`, '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      await deleteCarousel(item.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    } catch (e: any) {
+      if (e !== 'cancel') {
+        ElMessage.error(e.message || '删除失败')
+      }
     }
-    fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '操作失败')
   }
-}
 
-async function handleDelete(item) {
-  if (!confirm(`确定删除排序为 ${item.sortOrder} 的轮播图？`)) return
-  try {
-    await deleteCarousel(item.id)
-    fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '删除失败')
+  function formatDate(d?: string) {
+    if (!d) {
+      return '-'
+    }
+    return new Date(d).toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
   }
-}
 
-function formatDate(d) {
-  if (!d) return '-'
-  return new Date(d).toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
-}
-
-onMounted(fetchList)
+  onMounted(fetchList)
 </script>
 
 <style scoped>
-.carousel-management { padding: 32px; }              /* 加大内边距 */
+  .carousel-management {
+    padding: 24px;
+  }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;                 /* 加大底部间距 */
-}
+  .search-card {
+    margin-bottom: 20px;
+  }
 
-.page-title {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  font-size: 24px;                     /* 统一标题大小 */
-  font-weight: 600;                    /* 统一字重 */
-  color: var(--text);                  /* 主文字 #1d1d1f - 清晰可见 */
-  margin: 0;
-  letter-spacing: -0.2px;
-}
+  .table-card {
+    margin-bottom: 20px;
+  }
 
-.search-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
+  .video-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-.search-select { min-width: 130px; }
+  .video-thumb {
+    width: 40px;
+    height: 56px;
+    border-radius: 4px;
+  }
 
-.table-container {
-  background: var(--card);             /* 白色背景 */
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-}
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
 
-/* 表格右上角操作区 */
-.table-actions {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
-}
+  /* 番剧搜索样式 */
+  .anime-search-box {
+    position: relative;
+    width: 100%;
+  }
 
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table thead { background: var(--bg); }  /* 浅灰表头背景 */
-.data-table th {
-  padding: 14px 16px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--secondary);             /* 次要文字 #86868b */
-  letter-spacing: -0.1px;
-  border-bottom: 1px solid var(--border);
-}
-.data-table td {
-  padding: 14px 16px;
-  font-size: 15px;                     /* 统一字体大小 */
-  color: var(--text);                  /* 主文字 #1d1d1f */
-  border-bottom: 1px solid var(--border);
-}
-.data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover { background: rgba(0, 0, 0, 0.02); }  /* 悬停效果 */
-.loading-cell, .empty-cell { text-align: center; padding: 40px 16px; color: var(--secondary); }
+  .search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  }
 
-.actions { display: flex; gap: 8px; }
+  .search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
 
-.video-info-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.video-thumb {
-  width: 40px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
+  .search-result-item:last-child {
+    border-bottom: none;
+  }
 
-.sort-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-  background: rgba(0, 113, 227, 0.12); /* 苹果蓝背景 */
-  color: var(--accent);                /* 苹果蓝文字 */
-}
+  .search-result-item:hover {
+    background: rgba(99, 102, 241, 0.1);
+  }
 
-.type-tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-}
-.type-video { background: rgba(0, 113, 227, 0.12); color: var(--accent); }  /* 苹果蓝 */
-.type-ad { background: rgba(255, 149, 0, 0.12); color: var(--warning); }    /* 警告橙 */
+  .result-cover {
+    width: 50px;
+    height: 70px;
+    border-radius: 6px;
+  }
 
-.status-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-}
-.status-normal { background: rgba(52, 199, 89, 0.12); color: var(--success); }   /* 成功绿 */
-.status-disabled { background: rgba(255, 59, 48, 0.12); color: var(--danger); }  /* 危险红 */
+  .result-name {
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+    flex: 1;
+  }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 20px;
-}
-.page-info { font-size: 14px; color: var(--secondary); }  /* 次要文字 */
-.page-size-select { padding: 8px 12px; font-size: 14px; }
+  /* 已选择的番剧显示 */
+  .selected-anime {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+  }
 
-/* 弹窗 - Apple 风格 */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);      /* 弱化遮罩 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);         /* 毛玻璃效果 */
-}
-.modal {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 28px;                 /* 28px 圆角 */
-  width: 90%;
-  max-width: 560px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);  /* 柔和阴影 */
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 28px;                  /* 加大内边距 */
-  border-bottom: 1px solid var(--border);
-}
-.modal-title { 
-  font-size: 20px; 
-  font-weight: 600; 
-  color: var(--text);                  /* 主文字 #1d1d1f */
-  margin: 0;
-  letter-spacing: -0.2px;
-}
-.modal-close {
-  width: 32px; height: 32px;
-  border: none; background: rgba(0, 0, 0, 0.06); color: var(--secondary);
-  font-size: 20px; cursor: pointer; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.modal-close:hover { background: rgba(0, 0, 0, 0.1); color: var(--text); }
-.modal-body { padding: 28px; }         /* 加大内边距 */
+  .anime-cover {
+    width: 60px;
+    height: 80px;
+    border-radius: 6px;
+  }
 
-.form { display: flex; flex-direction: column; gap: 16px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-label { font-size: 13px; font-weight: 500; color: var(--text); }
-.form-input, .form-select { padding: 10px 14px; font-size: 14px; }
+  .anime-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
 
-.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
-.error-msg {
-  color: var(--danger);                /* 危险色 #ff3b30 */
-  font-size: 13px;
-  padding: 8px; 
-  background: rgba(255, 59, 48, 0.12); 
-  border-radius: 8px;
-}
-.btn-icon { font-size: 16px; margin-right: 4px; }
+  .anime-name {
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+    flex: 1;
+  }
 
-/* 番剧搜索样式 */
-.anime-search-box {
-  position: relative;
-}
-.search-input-group {
-  display: flex;
-  gap: 8px;
-}
-.search-input-group .form-input {
-  flex: 1;
-}
-.btn-search {
-  padding: 10px 20px;
-  white-space: nowrap;
-  min-width: 80px;
-}
-.search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 4px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* 规范轻阴影 */
-}
-.search-result-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: background 0.2s;
-  border-bottom: 1px solid var(--border);
-}
-.search-result-item:last-child {
-  border-bottom: none;
-}
-.search-result-item:hover {
-  background: rgba(99,102,241,0.1);
-}
-.result-cover {
-  width: 50px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-.result-name {
-  font-size: 14px;
-  color: var(--text);
-  flex: 1;
-}
-.search-loading {
-  padding: 12px;
-  text-align: center;
-  color: var(--sub);
-  font-size: 13px;
-}
-
-/* 已选择的番剧显示 */
-.selected-anime {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(99,102,241,0.1);
-  border: 1px solid rgba(99,102,241,0.3);
-  border-radius: 8px;
-}
-.anime-cover {
-  width: 60px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-.anime-info {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.anime-name {
-  font-size: 14px;
-  color: var(--text);
-  font-weight: 500;
-}
-.btn-clear {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: rgba(239,68,68,0.2);
-  color: #ef4444;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.btn-clear:hover {
-  background: rgba(239,68,68,0.4);
-}
+  .anime-info-btn {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .btn-clear {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-clear:hover {
+    background: rgba(239, 68, 68, 0.4);
+  }
 </style>

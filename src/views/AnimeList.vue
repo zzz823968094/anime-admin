@@ -1,293 +1,226 @@
 <template>
-  <div>
-
-    <div class="card">
-      <div class="filter-bar">
-        <input
+  <div class="anime-list">
+    <!-- 搜索栏 -->
+    <el-card shadow="never" class="search-card">
+      <el-form :inline="true" :model="filters" class="search-form">
+        <el-form-item label="关键词">
+          <el-input
             v-model="filters.keyword"
-            class="ctrl"
             placeholder="搜索番剧标题…"
-            style="width:220px"
-            @keydown.enter="loadAnime(1)"
-        />
-        <select v-model="filters.type" class="ctrl" @change="loadAnime(1)">
-          <option value="">全部分类</option>
-          <option value="67">🇯🇵 日韩动漫</option>
-          <option value="68">🌎 欧美动漫</option>
-          <option value="66">🇨🇳 中文动漫</option>
-        </select>
-        <button class="btn btn-primary" @click="loadAnime(1)">搜索</button>
-        <button class="btn btn-ghost" @click="resetFilter">重置</button>
-        <span class="total-label">{{ animeTotalLabel }}</span>
-      </div>
-
-      <table class="tbl">
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>标题</th>
-          <th>分类</th>
-          <th>集数</th>
-          <th>评分</th>
-          <th>操作</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-if="animeList.length === 0">
-          <td colspan="7" style="text-align:center;padding:30px;color:var(--sub)">加载中…</td>
-        </tr>
-        <tr v-for="anime in animeList" :key="anime.id">
-          <td style="color:var(--sub)">{{ anime.id }}</td>
-          <td>{{ anime.vodName }}</td>
-          <td>{{ TYPE_MAP[anime.typeId] || anime.typeId || '—' }}</td>
-          <td>第 {{ anime.vodTotal }} 集</td>
-          <td>{{ anime.vodScore || '—' }} ★</td>
-          <td>
-            <button class="btn btn-ghost btn-sm" :disabled="recrawlingIds.has(anime.id)" @click="recrawl(anime)">
-              {{ recrawlingIds.has(anime.id) ? '爬取中...' : '重新爬取' }}
-            </button>
-            <button class="btn btn-ghost btn-sm" @click="off(anime)">下架</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <div class="pager">
-        <button
-            class="pg-btn"
-            :disabled="currentPage === 1"
-            @click="loadAnime(currentPage - 1)"
-        >
-          上一页
-        </button>
-        <template v-for="item in displayPages" :key="item">
-          <span v-if="item === '...'" class="pg-ellipsis">...</span>
-          <button
-              v-else
-              class="pg-btn"
-              :class="{ on: currentPage === item }"
-              @click="loadAnime(item)"
+            clearable
+            style="width: 220px"
+            @keyup.enter="loadAnime(1)"
+          />
+        </el-form-item>
+        <el-form-item label="分类">
+          <el-select
+            v-model="filters.type"
+            placeholder="全部分类"
+            clearable
+            style="width: 150px"
+            @change="loadAnime(1)"
           >
-            {{ item }}
-          </button>
-        </template>
-        <button
-            class="pg-btn"
-            :disabled="currentPage === totalPages"
-            @click="loadAnime(currentPage + 1)"
-        >
-          下一页
-        </button>
-      </div>
-    </div>
+            <el-option label="🇯🇵 日韩动漫" value="67" />
+            <el-option label="🌎 欧美动漫" value="68" />
+            <el-option label="🇨🇳 中文动漫" value="66" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="loadAnime(1)">搜索</el-button>
+          <el-button @click="resetFilter">重置</el-button>
+          <span class="total-label">{{ animeTotalLabel }}</span>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-    <!-- Toast 提示 -->
-    <div v-if="toast.show" :class="['toast', toast.type]">
-      {{ toast.message }}
-    </div>
+    <!-- 表格 -->
+    <el-card shadow="never" class="table-card">
+      <el-table v-loading="loading" :data="animeList" border stripe style="width: 100%">
+        <el-table-column prop="id" label="ID" width="200">
+          <template #default="{ row }">
+            <span class="sub-text">{{ row.id }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="vodName" label="标题" min-width="200" />
+        <el-table-column label="分类" width="120">
+          <template #default="{ row }">
+            {{ TYPE_MAP[row.typeId] || row.typeId || '—' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="集数" width="100">
+          <template #default="{ row }">第 {{ row.vodTotal }} 集</template>
+        </el-table-column>
+        <el-table-column label="评分" width="100">
+          <template #default="{ row }">{{ row.vodScore || '—' }} ★</template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              :loading="recrawlingIds.has(row.id)"
+              @click="recrawl(row)"
+            >
+              {{ recrawlingIds.has(row.id) ? '爬取中...' : '重新爬取' }}
+            </el-button>
+            <el-button link type="warning" size="small" @click="off(row)">下架</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @current-change="loadAnime"
+          @size-change="handleSizeChange"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
-<script setup>
-import {computed, onMounted, reactive, ref} from 'vue'
-import {animeOff, getAnimeList} from '@/utils/api'
-import {crawlById} from '@/api/crawler'
+<script setup lang="ts">
+  import { ref, reactive, onMounted } from 'vue'
+  import { ElMessage } from 'element-plus'
+  import { animeOff, getAnimeList } from '@/utils/api'
+  import { crawlById } from '@/api/crawler'
 
-const TYPE_MAP = {'67': '🇯🇵 日韩', '68': '🌎 欧美', '66': '🇨🇳 中文'}
+  const TYPE_MAP: Record<string, string> = {
+    '67': '🇯🇵 日韩',
+    '68': '🌎 欧美',
+    '66': '🇨🇳 中文'
+  }
 
-const filters = reactive({
-  keyword: '',
-  status: '',
-  type: ''
-})
+  const loading = ref(false)
+  const filters = reactive({
+    keyword: '',
+    status: '',
+    type: ''
+  })
 
-const animeList = ref([])
-const currentPage = ref(1)
-const pageSize = ref(10)
-const total = ref(0)
+  const animeList = ref<any[]>([])
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const total = ref(0)
 
-const animeTotalLabel = ref('')
-const totalPages = ref(1)
+  const animeTotalLabel = ref('')
 
-// 记录正在爬取的番剧ID
-const recrawlingIds = ref(new Set())
+  // 记录正在爬取的番剧ID
+  const recrawlingIds = ref<Set<number>>(new Set())
 
-// 计算显示的页码（带省略号）
-const displayPages = computed(() => {
-  const pages = []
-  const total = totalPages.value
-  const current = currentPage.value
-
-  if (total <= 7) {
-    // 总页数小于等于7，显示所有页码
-    for (let i = 1; i <= total; i++) {
-      pages.push(i)
-    }
-  } else {
-    // 总页数大于7，使用省略号
-    if (current <= 4) {
-      // 当前页在前面
-      for (let i = 1; i <= 5; i++) {
-        pages.push(i)
+  const loadAnime = async (page: number) => {
+    loading.value = true
+    try {
+      currentPage.value = page
+      const params: any = {
+        page,
+        size: pageSize.value,
+        sort: 'latest'
       }
-      pages.push('...')
-      pages.push(total)
-    } else if (current >= total - 3) {
-      // 当前页在后面
-      pages.push(1)
-      pages.push('...')
-      for (let i = total - 4; i <= total; i++) {
-        pages.push(i)
+      if (filters.keyword) {
+        params.keyword = filters.keyword
       }
-    } else {
-      // 当前页在中间
-      pages.push(1)
-      pages.push('...')
-      for (let i = current - 1; i <= current + 1; i++) {
-        pages.push(i)
+      if (filters.status) {
+        params.status = filters.status
       }
-      pages.push('...')
-      pages.push(total)
+      if (filters.type) {
+        params.type = filters.type
+      }
+
+      const res = await getAnimeList(params)
+      animeList.value = res.data.records || []
+      total.value = res.data.total || 0
+      animeTotalLabel.value = `共 ${total.value} 条`
+    } catch (e: any) {
+      ElMessage.error(e.message || '加载番剧列表失败')
+    } finally {
+      loading.value = false
     }
   }
 
-  return pages
-})
-
-const loadAnime = async (page) => {
-  try {
-    currentPage.value = page
-    const params = {
-      page,
-      size: pageSize.value,
-      sort: 'latest'
-    }
-    if (filters.keyword) params.keyword = filters.keyword
-    if (filters.status) params.status = filters.status
-    if (filters.type) params.type = filters.type
-
-    const res = await getAnimeList(params)
-    animeList.value = res.data.records || []
-    total.value = res.data.total || 0
-    totalPages.value = Math.ceil(total.value / pageSize.value)
-    animeTotalLabel.value = `共 ${total.value} 条`
-  } catch (e) {
-    console.error('加载番剧列表失败', e)
+  const handleSizeChange = (size: number) => {
+    pageSize.value = size
+    loadAnime(1)
   }
-}
-const resetFilter = () => {
-  filters.keyword = ''
-  filters.status = ''
-  filters.type = ''
-  loadAnime(1)
-}
 
-// Toast 提示
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success'
-})
-
-const showToast = (message, type = 'success') => {
-  toast.message = message
-  toast.type = type
-  toast.show = true
-  setTimeout(() => {
-    toast.show = false
-  }, 3000)
-}
-
-const off = async (anime) => {
-  try {
-    const res = await animeOff(anime.id)
-    if (res.code === 200) {
-      showToast('下架成功')
-      loadAnime(currentPage.value)
-    } else {
-      showToast(res.message || '下架失败', 'error')
-    }
-  } catch (e) {
-    console.error('下架番剧失败', e)
-    showToast('下架失败，请稍后重试', 'error')
+  const resetFilter = () => {
+    filters.keyword = ''
+    filters.status = ''
+    filters.type = ''
+    loadAnime(1)
   }
-}
 
-const recrawl = async (anime) => {
-  // 添加到爬取中的集合
-  recrawlingIds.value.add(anime.id)
-  
-  try {
-    const res = await crawlById(anime.id)
-    if (res.code === 200) {
-      showToast('重新爬取任务已提交')
-    } else {
-      showToast(res.message || '重新爬取失败', 'error')
+  const off = async (anime: any) => {
+    try {
+      const res = await animeOff(anime.id)
+      if (res.code === 200) {
+        ElMessage.success('下架成功')
+        loadAnime(currentPage.value)
+      } else {
+        ElMessage.error(res.message || '下架失败')
+      }
+    } catch (e: any) {
+      ElMessage.error(e.message || '下架失败，请稍后重试')
     }
-  } catch (e) {
-    console.error('重新爬取番剧失败', e)
-    showToast('重新爬取失败，请稍后重试', 'error')
-  } finally {
-    // 从爬取中的集合移除
-    recrawlingIds.value.delete(anime.id)
-    await loadAnime(currentPage.value)
   }
-}
 
+  const recrawl = async (anime: any) => {
+    // 添加到爬取中的集合
+    recrawlingIds.value.add(anime.id)
 
-onMounted(() => {
-  loadAnime(1)
-})
+    try {
+      const res = await crawlById(anime.id)
+      if (res.code === 200) {
+        ElMessage.success('重新爬取任务已提交')
+      } else {
+        ElMessage.error(res.message || '重新爬取失败')
+      }
+    } catch (e: any) {
+      ElMessage.error(e.message || '重新爬取失败，请稍后重试')
+    } finally {
+      // 从爬取中的集合移除
+      recrawlingIds.value.delete(anime.id)
+      await loadAnime(currentPage.value)
+    }
+  }
+
+  onMounted(() => {
+    loadAnime(1)
+  })
 </script>
 
 <style scoped>
-.filter-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.total-label {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--sub);
-}
-
-/* Toast 提示 */
-.toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 15px 20px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;                 /* 12px 圆角 */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* 规范轻阴影 */
-  z-index: 2000;
-  animation: slideIn 0.3s ease;
-  font-weight: 500;
-  color: var(--text);
-  font-size: 14px;
-}
-
-.toast.success {
-  border-left: 4px solid var(--success);  /* 成功 #34c759 */
-}
-
-.toast.error {
-  border-left: 4px solid var(--danger);   /* 危险 #ff3b30 */
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
+  .anime-list {
+    padding: 24px;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+
+  .search-card {
+    margin-bottom: 20px;
   }
-}
+
+  .table-card {
+    margin-bottom: 20px;
+  }
+
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .sub-text {
+    color: var(--el-text-color-secondary);
+  }
+
+  .total-label {
+    margin-left: 12px;
+    font-size: 14px;
+    color: var(--el-text-color-secondary);
+  }
 </style>

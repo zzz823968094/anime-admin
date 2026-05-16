@@ -1,564 +1,312 @@
 <template>
-  <div>
+  <div class="site-user-management">
     <!-- 搜索栏 -->
-    <div class="card">
-      <div class="search-bar">
-        <input
-          v-model="searchForm.username"
-          type="text"
-          class="ctrl search-input"
-          placeholder="按用户名搜索"
-          @keyup.enter="handleSearch"
-        />
-        <select v-model="searchForm.status" class="ctrl search-select" @change="handleSearch">
-          <option value="">全部状态</option>
-          <option value="0">正常</option>
-          <option value="1">封禁</option>
-        </select>
-        <button class="btn btn-primary" @click="handleSearch">搜索</button>
-        <button class="btn btn-ghost" @click="handleReset">重置</button>
-      </div>
-    </div>
+    <el-card class="search-card" shadow="never">
+      <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form-item label="用户名">
+          <el-input
+            v-model="searchForm.username"
+            placeholder="按用户名搜索"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select
+            v-model="searchForm.status"
+            placeholder="全部状态"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="正常" value="0" />
+            <el-option label="封禁" value="1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
     <!-- 表格 -->
-    <div class="card">
-      <div v-if="loading" class="loading-state">加载中...</div>
-
-      <div v-else-if="userList.length === 0" class="empty-state">
-        <div class="empty-icon">👥</div>
-        <div class="empty-text">暂无用户数据</div>
-      </div>
-
-      <table v-else class="tbl">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>用户名</th>
-            <th>邮箱</th>
-            <th>角色</th>
-            <th>状态</th>
-            <th>积分</th>
-            <th>最后登录</th>
-            <th>注册时间</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in userList" :key="user.id">
-            <td>{{ user.id }}</td>
-            <td>
-              <div class="user-cell">
-                <img
-                  v-if="user.avatar"
-                  :src="user.avatar"
-                  :alt="user.username"
-                  class="user-avatar"
-                  @error="handleAvatarError"
-                />
-                <div v-else class="user-avatar-placeholder">
-                  {{ user.username.charAt(0).toUpperCase() }}
-                </div>
-                <span class="username-text">{{ user.username }}</span>
-              </div>
-            </td>
-            <td>{{ user.email || '-' }}</td>
-            <td>
-              <span :class="['badge', user.role === 1 ? 'b-purple' : 'b-blue']">
-                {{ user.role === 1 ? '管理员' : '普通用户' }}
-              </span>
-            </td>
-            <td>
-              <span :class="['badge', user.status === 0 ? 'b-green' : 'b-red']">
-                {{ user.status === 0 ? '正常' : '封禁' }}
-              </span>
-            </td>
-            <td>{{ user.points || 0 }}</td>
-            <td>{{ formatDateTime(user.lastLoginAt) }}</td>
-            <td>{{ formatDateTime(user.createdAt) }}</td>
-            <td>
-              <div class="action-buttons">
-                <button
-                  :class="['btn btn-sm', user.status === 0 ? 'btn-warning' : 'btn-success']"
-                  @click="handleToggleStatus(user)"
-                  :disabled="user.role === 1"
-                >
-                  {{ user.status === 0 ? '封禁' : '解封' }}
-                </button>
-                <button
-                  class="btn btn-danger btn-sm"
-                  @click="handleDelete(user)"
-                  :disabled="user.role === 1"
-                >
-                  删除
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <el-card class="table-card" shadow="never">
+      <el-table
+        v-loading="loading"
+        :data="userList"
+        border
+        stripe
+        style="width: 100%"
+        empty-text="暂无用户数据"
+      >
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column label="用户名" min-width="150">
+          <template #default="{ row }">
+            <div class="user-cell">
+              <el-avatar v-if="row.avatar" :src="row.avatar" :alt="row.username" size="small" />
+              <el-avatar v-else size="small">
+                {{ row.username.charAt(0).toUpperCase() }}
+              </el-avatar>
+              <span class="username-text">{{ row.username }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="email" label="邮箱" min-width="180">
+          <template #default="{ row }">
+            {{ row.email || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="角色" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.role === 1 ? 'purple' : 'blue'" size="small">
+              {{ row.role === 1 ? '管理员' : '普通用户' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 0 ? 'success' : 'danger'" size="small">
+              {{ row.status === 0 ? '正常' : '封禁' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="points" label="积分" width="80">
+          <template #default="{ row }">
+            {{ row.points || 0 }}
+          </template>
+        </el-table-column>
+        <el-table-column label="最后登录" min-width="160">
+          <template #default="{ row }">
+            {{ formatDateTime(row.lastLoginAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="注册时间" min-width="160">
+          <template #default="{ row }">
+            {{ formatDateTime(row.createdAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="180" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              link
+              :type="row.status === 0 ? 'warning' : 'success'"
+              size="small"
+              :disabled="row.role === 1"
+              @click="handleToggleStatus(row)"
+            >
+              {{ row.status === 0 ? '封禁' : '解封' }}
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              size="small"
+              :disabled="row.role === 1"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <!-- 分页 -->
-      <div v-if="pagination.total > 0" class="pager">
-        <button
-          class="pg-btn"
-          :disabled="pagination.current === 1"
-          @click="handlePageChange(pagination.current - 1)"
-        >
-          上一页
-        </button>
-        <template v-for="item in displayPages" :key="item">
-          <span v-if="item === '...'" class="pg-ellipsis">...</span>
-          <button
-            v-else
-            class="pg-btn"
-            :class="{ on: pagination.current === item }"
-            @click="handlePageChange(item)"
-          >
-            {{ item }}
-          </button>
-        </template>
-        <button
-          class="pg-btn"
-          :disabled="pagination.current >= totalPages"
-          @click="handlePageChange(pagination.current + 1)"
-        >
-          下一页
-        </button>
-        <select class="ctrl pg-size-select" v-model.number="pagination.pageSize" @change="handlePageSizeChange">
-          <option :value="10">10条/页</option>
-          <option :value="20">20条/页</option>
-          <option :value="50">50条/页</option>
-          <option :value="100">100条/页</option>
-        </select>
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handlePageSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
-    </div>
-
-    <!-- Toast 提示 -->
-    <div v-if="toast.show" :class="['toast', toast.type]">
-      {{ toast.message }}
-    </div>
+    </el-card>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
-import { getSiteUserList, getSiteUserCount, updateSiteUserStatus, deleteSiteUser } from '@/api/siteUser'
+<script setup lang="ts">
+  import { ref, reactive, onMounted } from 'vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import {
+    getSiteUserList,
+    getSiteUserCount,
+    updateSiteUserStatus,
+    deleteSiteUser
+  } from '@/api/siteUser'
+  import type { SiteUser } from '@/types/api'
 
-const loading = ref(false)
-const userList = ref([])
-const totalCount = ref(0)
+  const loading = ref(false)
+  const userList = ref<SiteUser[]>([])
+  const totalCount = ref(0)
 
-const pagination = reactive({
-  current: 1,
-  pageSize: 10,
-  total: 0
-})
-
-const totalPages = computed(() => Math.ceil(pagination.total / pagination.pageSize))
-
-// 计算显示的页码（带省略号）
-const displayPages = computed(() => {
-  const pages = []
-  const total = totalPages.value
-  const current = pagination.current
-  
-  if (total <= 7) {
-    // 总页数小于等于7，显示所有页码
-    for (let i = 1; i <= total; i++) {
-      pages.push(i)
-    }
-  } else {
-    // 总页数大于7，使用省略号
-    if (current <= 4) {
-      // 当前页在前面
-      for (let i = 1; i <= 5; i++) {
-        pages.push(i)
-      }
-      pages.push('...')
-      pages.push(total)
-    } else if (current >= total - 3) {
-      // 当前页在后面
-      pages.push(1)
-      pages.push('...')
-      for (let i = total - 4; i <= total; i++) {
-        pages.push(i)
-      }
-    } else {
-      // 当前页在中间
-      pages.push(1)
-      pages.push('...')
-      for (let i = current - 1; i <= current + 1; i++) {
-        pages.push(i)
-      }
-      pages.push('...')
-      pages.push(total)
-    }
-  }
-  
-  return pages
-})
-
-const searchForm = reactive({
-  username: '',
-  status: ''
-})
-
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success'
-})
-
-// 显示 Toast 提示
-const showToast = (message, type = 'success') => {
-  toast.message = message
-  toast.type = type
-  toast.show = true
-  setTimeout(() => {
-    toast.show = false
-  }, 3000)
-}
-
-// 获取用户列表
-const fetchUserList = async () => {
-  loading.value = true
-  try {
-    const res = await getSiteUserList({
-      page: pagination.current,
-      size: pagination.pageSize,
-      username: searchForm.username,
-      status: searchForm.status
-    })
-
-    // 根据后端实际响应结构调整
-    userList.value = res.data.records || []
-    pagination.total = res.data.total
-  } catch (error) {
-    console.error('获取用户列表失败:', error)
-    showToast('加载用户列表失败', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 获取用户总数
-const fetchTotalCount = async () => {
-  try {
-    const res = await getSiteUserCount()
-    totalCount.value = res.data || 0
-  } catch (error) {
-    console.error('获取用户总数失败:', error)
-  }
-}
-
-// 搜索
-const handleSearch = () => {
-  pagination.current = 1
-  fetchUserList()
-}
-
-// 重置
-const handleReset = () => {
-  searchForm.username = ''
-  searchForm.status = ''
-  handleSearch()
-}
-
-// 分页切换
-const handlePageChange = (page) => {
-  if (page < 1 || page > totalPages.value) return
-  pagination.current = page
-  fetchUserList()
-}
-
-// 每页条数变化
-const handlePageSizeChange = () => {
-  pagination.current = 1
-  fetchUserList()
-}
-
-// 切换状态
-const handleToggleStatus = async (user) => {
-  if (user.role === 1) {
-    showToast('无法修改管理员状态', 'error')
-    return
-  }
-
-  const newStatus = user.status === 0 ? 1 : 0
-  const action = newStatus === 0 ? '解封' : '封禁'
-
-  if (!confirm(`确定要${action}用户 "${user.username}" 吗？`)) {
-    return
-  }
-
-  try {
-    await updateSiteUserStatus(user.id, newStatus)
-    showToast(`${action}成功`)
-    fetchUserList()
-    fetchTotalCount()
-  } catch (error) {
-    console.error(`${action}失败:`, error)
-    showToast(`${action}失败`, 'error')
-  }
-}
-
-// 删除用户
-const handleDelete = async (user) => {
-  if (user.role === 1) {
-    showToast('无法删除管理员账号', 'error')
-    return
-  }
-
-  if (!confirm(`确定要删除用户 "${user.username}" 吗？此操作不可恢复！`)) {
-    return
-  }
-
-  try {
-    await deleteSiteUser(user.id)
-    showToast('删除成功')
-    fetchUserList()
-    fetchTotalCount()
-  } catch (error) {
-    console.error('删除失败:', error)
-    showToast('删除失败', 'error')
-  }
-}
-
-// 格式化日期时间
-const formatDateTime = (dateTime) => {
-  if (!dateTime) return '-'
-  const date = new Date(dateTime)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  const pagination = reactive({
+    current: 1,
+    pageSize: 10,
+    total: 0
   })
-}
 
-// 头像加载失败处理
-const handleAvatarError = (e) => {
-  e.target.style.display = 'none'
-}
+  const searchForm = reactive({
+    username: '',
+    status: ''
+  })
 
-onMounted(() => {
-  fetchUserList()
-  fetchTotalCount()
-})
+  // 获取用户列表
+  const fetchUserList = async () => {
+    loading.value = true
+    try {
+      const res = await getSiteUserList({
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize,
+        username: searchForm.username || undefined,
+        status: searchForm.status || undefined
+      })
+
+      userList.value = res.data.list || []
+      pagination.total = res.data.total
+    } catch (error: any) {
+      ElMessage.error(error.message || '加载用户列表失败')
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 获取用户总数
+  const fetchTotalCount = async () => {
+    try {
+      const res = await getSiteUserCount()
+      totalCount.value = res.data || 0
+    } catch (error: any) {
+      console.error('获取用户总数失败:', error)
+    }
+  }
+
+  // 搜索
+  const handleSearch = () => {
+    pagination.current = 1
+    fetchUserList()
+  }
+
+  // 重置
+  const handleReset = () => {
+    searchForm.username = ''
+    searchForm.status = ''
+    handleSearch()
+  }
+
+  // 分页切换
+  const handlePageChange = (page: number) => {
+    pagination.current = page
+    fetchUserList()
+  }
+
+  // 每页条数变化
+  const handlePageSizeChange = (size: number) => {
+    pagination.pageSize = size
+    pagination.current = 1
+    fetchUserList()
+  }
+
+  // 切换状态
+  const handleToggleStatus = async (user: SiteUser) => {
+    if (user.role === 1) {
+      ElMessage.warning('无法修改管理员状态')
+      return
+    }
+
+    const newStatus = user.status === 0 ? 1 : 0
+    const action = newStatus === 0 ? '解封' : '封禁'
+
+    try {
+      await ElMessageBox.confirm(`确定要${action}用户 "${user.username}" 吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+
+      await updateSiteUserStatus(user.id, newStatus)
+      ElMessage.success(`${action}成功`)
+      fetchUserList()
+      fetchTotalCount()
+    } catch (error: any) {
+      if (error !== 'cancel') {
+        ElMessage.error(error.message || `${action}失败`)
+      }
+    }
+  }
+
+  // 删除用户
+  const handleDelete = async (user: SiteUser) => {
+    if (user.role === 1) {
+      ElMessage.warning('无法删除管理员账号')
+      return
+    }
+
+    try {
+      await ElMessageBox.confirm(`确定要删除用户 "${user.username}" 吗？此操作不可恢复！`, '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+
+      await deleteSiteUser(user.id)
+      ElMessage.success('删除成功')
+      fetchUserList()
+      fetchTotalCount()
+    } catch (error: any) {
+      if (error !== 'cancel') {
+        ElMessage.error(error.message || '删除失败')
+      }
+    }
+  }
+
+  // 格式化日期时间
+  const formatDateTime = (dateTime?: string) => {
+    if (!dateTime) {
+      return '-'
+    }
+    const date = new Date(dateTime)
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  onMounted(() => {
+    fetchUserList()
+    fetchTotalCount()
+  })
 </script>
 
 <style scoped>
-.page-hd {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-stats {
-  display: flex;
-  gap: 16px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 14px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--sub);
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--accent2);
-}
-
-.search-bar {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.search-input {
-  flex: 1;
-  min-width: 200px;
-  max-width: 300px;
-}
-
-.search-select {
-  padding: 7px 12px;
-  font-size: 13px;
-  min-width: 150px;
-}
-
-.user-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.user-avatar-placeholder {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--accent);           /* 纯色，禁止渐变 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.username-text {
-  font-weight: 500;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.loading-state {
-  text-align: center;
-  padding: 40px;
-  color: var(--sub);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--sub);
-}
-
-.empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
-  opacity: 0.3;
-}
-
-.empty-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.pager {
-  display: flex;
-  gap: 6px;
-  margin-top: 14px;
-  justify-content: center;
-  align-items: center;
-}
-
-.pg-btn {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--secondary);
-  padding: 6px 12px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  cursor: pointer;
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.pg-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-.pg-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pg-info {
-  font-size: 13px;
-  color: var(--secondary);
-}
-
-.pg-size-select {
-  padding: 6px 8px;
-  font-size: 13px;
-  margin-left: 8px;
-}
-
-/* Toast 提示 */
-.toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 15px 20px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;                 /* 12px 圆角 */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* 规范轻阴影 */
-  z-index: 2000;
-  animation: slideIn 0.3s ease;
-  font-weight: 500;
-  color: var(--text);
-  font-size: 14px;
-}
-
-.toast.success {
-  border-left: 4px solid var(--success);  /* 成功 #34c759 */
-}
-
-.toast.error {
-  border-left: 4px solid var(--danger);   /* 危险 #ff3b30 */
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  .page-hd {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .site-user-management {
+    padding: 24px;
   }
 
-  .search-bar {
-    flex-direction: column;
+  .search-card {
+    margin-bottom: 20px;
   }
 
-  .search-input,
-  .search-select {
-    max-width: 100%;
+  .table-card {
+    margin-bottom: 20px;
   }
 
-  table {
-    font-size: 12px;
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  .action-buttons {
-    flex-direction: column;
+  .username-text {
+    font-weight: 500;
   }
-}
+
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
 </style>

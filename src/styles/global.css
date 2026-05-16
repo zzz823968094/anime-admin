@@ -8,26 +8,32 @@
      Apple Design System Colors - Light Mode Only
      严格遵循 Apple 管理端配色规范
      ============================================ */
-  
+
   /* 基础背景色 */
-  --bg: #f5f5f7;                    /* 页面背景 */
-  --card: #ffffff;                  /* 卡片/容器背景 */
-  
+  --bg: #f5f5f7; /* 页面背景 */
+  --card: #ffffff; /* 卡片/容器背景 */
+
   /* 文字颜色 */
-  --text: #1d1d1f;                  /* 主文字 */
-  --secondary: #86868b;             /* 次要/辅助文字 */
-  
+  --text: #1d1d1f; /* 主文字 */
+  --secondary: #86868b; /* 次要/辅助文字 */
+
   /* 主题强调色 */
-  --accent: #0071e3;                /* 主题强调蓝 */
-  
+  --accent: #0071e3; /* 主题强调蓝 */
+
   /* 边框与分割线 */
-  --border: rgba(0, 0, 0, 0.08);   /* 边框分割线 */
-  
+  --border: rgba(0, 0, 0, 0.08); /* 边框分割线 */
+
+  /* 圆角规范 */
+  --radius-circle: 50%; /* 圆形 */
+  --radius-standard: 8px; /* 标准圆角 */
+  --radius-lg: 12px; /* 大圆角 */
+  --radius-xl: 28px; /* 超大圆角（弹窗） */
+
   /* 状态色（固定） */
-  --success: #34c759;               /* 成功 */
-  --warning: #ff9500;               /* 警告 */
-  --danger: #ff3b30;                /* 危险 */
-  
+  --success: #34c759; /* 成功 */
+  --warning: #ff9500; /* 警告 */
+  --danger: #ff3b30; /* 危险 */
+
   /* Legacy Compatibility (保持向后兼容，逐步淘汰) */
   --bg-primary: var(--bg);
   --bg-secondary: var(--bg);
@@ -45,6 +51,7 @@
   --surface-dark-3: var(--card);
   --surface-dark-4: var(--card);
   --surface-dark-5: var(--card);
+  --dark-surface-1: var(--card); /* Legacy compatibility */
   --btn-active: #ededf2;
   --btn-default-light: #f5f5f7;
   --overlay: rgba(210, 210, 215, 0.64);
@@ -57,8 +64,6 @@
   --bg-light-gray: var(--bg);
 }
 
-
-
 * {
   margin: 0;
   padding: 0;
@@ -68,11 +73,17 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-family:
+    'SF Pro Text',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 15px;                               /* 正文字体 15px */
+  font-size: 15px; /* 正文字体 15px */
   letter-spacing: -0.1px;
   line-height: 1.47;
 }
@@ -131,7 +142,12 @@ a:focus {
 
 /* 页面标题 - 24px 字重600 */
 .page-title {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
   font-size: 24px;
   font-weight: 600;
   line-height: 1.1;
@@ -140,7 +156,12 @@ a:focus {
 
 /* 章节标题 - 18px 字重600 */
 .sec-title {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
   font-size: 18px;
   font-weight: 600;
   line-height: 1.2;
@@ -149,7 +170,11 @@ a:focus {
 
 /* 正文 - 15px 字重400 */
 .body-text {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 15px;
   font-weight: 400;
   line-height: 1.47;
@@ -158,7 +183,11 @@ a:focus {
 
 /* 辅助小字/表头 - 13px 字重400 */
 .caption {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 13px;
   font-weight: 400;
   line-height: 1.3;
@@ -167,7 +196,11 @@ a:focus {
 
 /* Micro - 12px */
 .micro {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 1.33;
@@ -176,7 +209,11 @@ a:focus {
 
 /* Micro Bold - 12px */
 .micro-bold {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.33;
@@ -185,7 +222,11 @@ a:focus {
 
 /* Nano - 10px (Legal text, smallest size) */
 .nano {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 10px;
   font-weight: 400;
   line-height: 1.47;
@@ -194,7 +235,11 @@ a:focus {
 
 /* Nav Heading - 34px */
 .nav-heading {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 34px;
   font-weight: 600;
   line-height: 1.47;
@@ -203,41 +248,51 @@ a:focus {
 
 /* Sub-nav - 24px Light */
 .sub-nav {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 24px;
   font-weight: 300;
-  line-height: 1.50;
+  line-height: 1.5;
   letter-spacing: normal;
 }
 
 /* Button Large - 18px Light */
 .btn-large-text {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 18px;
   font-weight: 300;
-  line-height: 1.00;
+  line-height: 1;
   letter-spacing: normal;
 }
 
 /* FORM CONTROLS - 输入框规范 */
 .ctrl {
   background: var(--card);
-  border: 1px solid var(--border);     /* 浅细边框 */
-  border-radius: 8px;                  /* 8px 圆角 */
-  padding: 10px 14px;                  /* 加大内边距 */
+  border: 1px solid var(--border); /* 浅细边框 */
+  border-radius: 8px; /* 8px 圆角 */
+  padding: 10px 14px; /* 加大内边距 */
   color: var(--text);
   font-size: 15px;
   font-weight: 400;
   letter-spacing: -0.1px;
   outline: none;
   font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 /* 聚焦只高亮苹果蓝#0071e3 */
 .ctrl:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.08);  /* 弱化聚焦阴影 */
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.08); /* 弱化聚焦阴影 */
 }
 
 .ctrl::placeholder {
@@ -256,8 +311,8 @@ select.ctrl option {
 
 .btn {
   border: none;
-  padding: 10px 18px;                  /* 加大内边距 */
-  border-radius: 8px;                  /* 强制 8px 圆角 */
+  padding: 10px 18px; /* 加大内边距 */
+  border-radius: 8px; /* 强制 8px 圆角 */
   cursor: pointer;
   font-size: 15px;
   font-weight: 500;
@@ -274,12 +329,12 @@ select.ctrl option {
   stroke: currentColor;
   transition: stroke 0.2s ease;
 }
-.btn-add{
+.btn-add {
   margin-left: auto;
 }
 /* 主按钮：背景#0071e3、白色文字、8px圆角 */
 .btn-primary {
-  background: #0071e3;                 /* Apple 主色 */
+  background: #0071e3; /* Apple 主色 */
   color: #ffffff;
 }
 
@@ -296,11 +351,11 @@ select.ctrl option {
 
 .btn-ghost:hover {
   background: #e8e8ed;
-  color: var(--accent);                  /* hover 时文字变蓝 */
+  color: var(--accent); /* hover 时文字变蓝 */
 }
 
 .btn-ghost:hover svg {
-  stroke: var(--accent);                 /* hover 时图标变蓝 */
+  stroke: var(--accent); /* hover 时图标变蓝 */
 }
 
 /* ============================================
@@ -318,7 +373,9 @@ select.ctrl option {
   font-weight: 400;
   line-height: 1.47;
   letter-spacing: -0.374px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .btn-filter:hover {
@@ -372,10 +429,10 @@ select.ctrl option {
    ============================================ */
 
 .sidebar {
-  width: 240px;                        /* 侧边栏宽固定240px */
+  width: 240px; /* 侧边栏宽固定240px */
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.72); /* Apple 规范背景透明度 */
-  backdrop-filter: blur(20px) saturate(180%);  /* 毛玻璃效果 */
+  backdrop-filter: blur(20px) saturate(180%); /* 毛玻璃效果 */
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-right: 1px solid rgba(0, 0, 0, 0.08); /* 细分割线 */
   display: flex;
@@ -391,9 +448,9 @@ select.ctrl option {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;                        /* 防止内容溢出 */
-  background: #f5f5f7;                 /* Apple 浅灰背景 */
-  height: 100vh;                       /* 占满视口高度以实现内部滚动 */
+  min-width: 0; /* 防止内容溢出 */
+  background: #f5f5f7; /* Apple 浅灰背景 */
+  height: 100vh; /* 占满视口高度以实现内部滚动 */
 }
 
 /* 顶部 Header 栏 - Apple 风格 (固定不滚动) */
@@ -401,19 +458,19 @@ select.ctrl option {
   height: 48px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);  /* 毛玻璃效果 */
+  backdrop-filter: blur(20px) saturate(180%); /* 毛玻璃效果 */
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08); /* 细分割线 */
   display: flex;
   align-items: center;
   padding: 0 32px;
   z-index: 90;
-  position: sticky;                    /* 粘性定位 */
+  position: sticky; /* 粘性定位 */
   top: 0;
 }
 
 .sb-logo {
-  height: 48px;                        /* 固定高度 48px 与 Header 对齐 */
+  height: 48px; /* 固定高度 48px 与 Header 对齐 */
   flex-shrink: 0;
   padding: 0 24px;
   display: flex;
@@ -437,13 +494,13 @@ select.ctrl option {
 }
 
 .sb-menu {
-  padding: 16px 0;                     /* 加大内边距 */
+  padding: 16px 0; /* 加大内边距 */
   flex: 1;
   overflow-y: auto;
 }
 
 .sb-section {
-  padding: 16px 24px 8px;              /* 加大内边距 */
+  padding: 16px 24px 8px; /* 加大内边距 */
   font-size: 13px;
   font-weight: 600;
   color: var(--secondary);
@@ -454,7 +511,7 @@ select.ctrl option {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 24px;                  /* 加大内边距 */
+  padding: 12px 24px; /* 加大内边距 */
   font-size: 15px;
   font-weight: 400;
   color: var(--text);
@@ -484,14 +541,14 @@ select.ctrl option {
 }
 
 .sb-item .ic {
-  width: 18px;                           /* 导航栏图标固定 18x18px */
+  width: 18px; /* 导航栏图标固定 18x18px */
   height: 18px;
-  stroke: #1d1d1f;                       /* 常规状态主色 */
+  stroke: #1d1d1f; /* 常规状态主色 */
   flex-shrink: 0;
 }
 
 .sb-item.on .ic {
-  stroke: #0071e3;                       /* 选中状态苹果蓝 */
+  stroke: #0071e3; /* 选中状态苹果蓝 */
 }
 
 .sb-bottom {
@@ -547,8 +604,8 @@ select.ctrl option {
 
 .main {
   flex: 1;
-  padding: 32px;                       /* 加大内边距 32px */
-  overflow-y: auto;                    /* 主内容区独立滚动 */
+  padding: 32px; /* 加大内边距 32px */
+  overflow-y: auto; /* 主内容区独立滚动 */
   scroll-behavior: smooth;
 }
 
@@ -556,14 +613,19 @@ select.ctrl option {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 32px;                 /* 加大底部间距 */
+  margin-bottom: 32px; /* 加大底部间距 */
   padding-bottom: 24px;
   border-bottom: 1px solid var(--border);
 }
 
 .page-title {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  font-size: 24px;                     /* 页面标题 24px */
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 24px; /* 页面标题 24px */
   font-weight: 600;
   line-height: 1.1;
   color: var(--text);
@@ -572,7 +634,11 @@ select.ctrl option {
 }
 
 .page-subtitle {
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Text',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 15px;
   font-weight: 400;
   line-height: 1.47;
@@ -588,7 +654,7 @@ select.ctrl option {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;                           /* 加大间距 20px */
+  gap: 20px; /* 加大间距 20px */
   margin-bottom: 28px;
 }
 
@@ -596,34 +662,39 @@ select.ctrl option {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 28px;                       /* 加大内边距 28px */
+  padding: 28px; /* 加大内边距 28px */
   display: flex;
   align-items: center;
   gap: 18px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);  /* 极轻阴影 */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04); /* 极轻阴影 */
 }
 
 .stat-ic {
-  width: 48px;                           /* 增加容器尺寸以保持视觉平衡 */
+  width: 48px; /* 增加容器尺寸以保持视觉平衡 */
   height: 48px;
-  border-radius: 50%;                    /* 强制圆形背景 */
+  border-radius: 50%; /* 强制圆形背景 */
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--apple-blue);         /* 背景 #0071e3 */
+  background: var(--apple-blue); /* 背景 #0071e3 */
   padding: 12px;
 }
 
 .stat-ic svg {
-  width: 24px;                           /* 内部图标固定 24x24px */
+  width: 24px; /* 内部图标固定 24x24px */
   height: 24px;
-  stroke: #ffffff;                       /* 白色线条 */
+  stroke: #ffffff; /* 白色线条 */
   stroke-width: 1.5px;
 }
 
 .stat-val {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
   font-size: 24px;
   font-weight: 600;
   color: var(--text);
@@ -648,14 +719,19 @@ select.ctrl option {
 .card {
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.04); /* 极细边框 */
-  border-radius: 12px;                 /* 12px 圆角 */
-  padding: 32px;                       /* 加大内边距 32px */
+  border-radius: 12px; /* 12px 圆角 */
+  padding: 32px; /* 加大内边距 32px */
   margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* Apple 风格轻微阴影 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); /* Apple 风格轻微阴影 */
 }
 
 .sec-title {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
   font-size: 18px;
   font-weight: 600;
   line-height: 1.2;
@@ -677,22 +753,22 @@ select.ctrl option {
   width: 100%;
   border-collapse: collapse;
   font-size: 15px;
-  text-align: left;                    /* 文字左对齐 */
+  text-align: left; /* 文字左对齐 */
 }
 
 .tbl th {
   text-align: left;
-  padding: 14px 16px;                  /* 加大内边距 */
-  color: var(--secondary);             /* 表头浅灰 */
+  padding: 14px 16px; /* 加大内边距 */
+  color: var(--secondary); /* 表头浅灰 */
   font-weight: 500;
   font-size: 13px;
   letter-spacing: -0.1px;
-  border-bottom: 1px solid var(--border);  /* 行分割线 */
+  border-bottom: 1px solid var(--border); /* 行分割线 */
 }
 
 .tbl td {
-  padding: 14px 16px;                  /* 加大内边距 */
-  border-bottom: 1px solid var(--border);  /* 行分割线 */
+  padding: 14px 16px; /* 加大内边距 */
+  border-bottom: 1px solid var(--border); /* 行分割线 */
   color: var(--text);
 }
 
@@ -712,14 +788,14 @@ select.ctrl option {
 
 .badge {
   padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
+  border-radius: 8px; /* 8px 圆角 */
   font-size: 12px;
   font-weight: 500;
   display: inline-block;
 }
 
 .b-green {
-  background: rgba(52, 199, 89, 0.12);   /* 成功 #34c759 */
+  background: rgba(52, 199, 89, 0.12); /* 成功 #34c759 */
   color: var(--success);
 }
 
@@ -734,7 +810,7 @@ select.ctrl option {
 }
 
 .b-red {
-  background: rgba(255, 59, 48, 0.12);   /* 危险 #ff3b30 */
+  background: rgba(255, 59, 48, 0.12); /* 危险 #ff3b30 */
   color: var(--danger);
 }
 
@@ -744,7 +820,7 @@ select.ctrl option {
 }
 
 .b-orange {
-  background: rgba(255, 149, 0, 0.12);   /* 警告 #ff9500 */
+  background: rgba(255, 149, 0, 0.12); /* 警告 #ff9500 */
   color: var(--warning);
 }
 
@@ -914,7 +990,7 @@ select.ctrl option {
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 8px 14px;                   /* 加大内边距 */
+  padding: 8px 14px; /* 加大内边距 */
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
@@ -935,12 +1011,21 @@ select.ctrl option {
 }
 
 @keyframes sh {
-  0% { background-position: 200% 0 }
-  100% { background-position: -200% 0 }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .sh {
-  background: linear-gradient(90deg, var(--dark-surface-1) 25%, var(--bg-light-gray) 50%, var(--dark-surface-1) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--dark-surface-1) 25%,
+    var(--bg-light-gray) 50%,
+    var(--dark-surface-1) 75%
+  );
   background-size: 200% 100%;
   animation: sh 1.4s infinite;
   border-radius: 6px;
@@ -955,8 +1040,8 @@ select.ctrl option {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);      /* 弱化遮罩 */
-  backdrop-filter: blur(10px);         /* 毛玻璃效果 */
+  background: rgba(0, 0, 0, 0.3); /* 弱化遮罩 */
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
   -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -966,8 +1051,8 @@ select.ctrl option {
 
 .modal {
   background: var(--card);
-  border-radius: 28px;                 /* 28px 圆角 */
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);  /* 柔和阴影 */
+  border-radius: 28px; /* 28px 圆角 */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12); /* 柔和阴影 */
   max-width: 560px;
   width: 90%;
   max-height: 90vh;
@@ -976,7 +1061,7 @@ select.ctrl option {
 }
 
 .modal-header {
-  padding: 24px 28px;                  /* 加大内边距 */
+  padding: 24px 28px; /* 加大内边距 */
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
@@ -984,7 +1069,11 @@ select.ctrl option {
 }
 
 .modal-header h3 {
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 20px;
   font-weight: 600;
   line-height: 1.2;
@@ -1014,11 +1103,11 @@ select.ctrl option {
 }
 
 .modal-body {
-  padding: 28px;                       /* 加大内边距 */
+  padding: 28px; /* 加大内边距 */
 }
 
 .modal-footer {
-  padding: 20px 28px;                  /* 加大内边距 */
+  padding: 20px 28px; /* 加大内边距 */
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
@@ -1041,7 +1130,9 @@ select.ctrl option {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -1180,17 +1271,17 @@ select.ctrl option {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .page-title {
     font-size: 28px;
   }
-  
+
   .sidebar {
     width: 100%;
     position: relative;
     height: auto;
   }
-  
+
   .main {
     margin-left: 0;
   }
@@ -1201,11 +1292,11 @@ select.ctrl option {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .page-title {
     font-size: 32px;
   }
-  
+
   .crawler-grid {
     grid-template-columns: 1fr;
   }
@@ -1246,9 +1337,9 @@ select.ctrl option {
 /* 响应式适配 - Apple 管理端规范 */
 @media (max-width: 833px) {
   .sidebar {
-    width: 200px;                      /* 中屏侧边栏收窄 */
+    width: 200px; /* 中屏侧边栏收窄 */
   }
-  
+
   .main {
     padding: 24px;
   }
@@ -1257,14 +1348,14 @@ select.ctrl option {
 @media (max-width: 639px) {
   .sidebar {
     position: fixed;
-    left: -240px;                      /* 移动端抽屉式隐藏 */
+    left: -240px; /* 移动端抽屉式隐藏 */
     transition: left 0.3s ease;
   }
-  
+
   .sidebar.open {
     left: 0;
   }
-  
+
   .main {
     padding: 16px;
   }
@@ -1275,12 +1366,12 @@ select.ctrl option {
   .btn {
     min-height: 44px;
   }
-  
+
   .pg-btn {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   .sb-item {
     min-height: 44px;
   }

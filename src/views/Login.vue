@@ -1,155 +1,150 @@
 <template>
-  <div class="login-container dark-section">
-    <div class="login-card">
+  <div class="login-container">
+    <el-card class="login-card" shadow="always">
       <div class="login-header">
-        <h1 class="display-hero login-title">管理后台</h1>
-        <p class="sub-heading login-subtitle">动漫天堂</p>
+        <h1 class="login-title">管理后台</h1>
+        <p class="login-subtitle">动漫天堂</p>
       </div>
-      <form @submit.prevent="handleLogin" class="login-form">
-        <div class="form-group">
-          <label class="form-label body-emphasis">账号</label>
-          <input
+      <el-form :model="form" class="login-form" label-position="top" @submit.prevent="handleLogin">
+        <el-form-item label="账号">
+          <el-input
             v-model="form.account"
             type="text"
-            class="ctrl login-input"
             placeholder="请输入账号"
-            required
+            clearable
+            size="large"
           />
-        </div>
-        <div class="form-group">
-          <label class="form-label body-emphasis">密码</label>
-          <input 
-            v-model="form.password" 
-            type="password" 
-            class="ctrl login-input" 
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input
+            v-model="form.password"
+            type="password"
             placeholder="请输入密码"
-            required
+            show-password
+            size="large"
+            @keyup.enter="handleLogin"
           />
-        </div>
-        <div v-if="errorMsg" class="error-msg caption">{{ errorMsg }}</div>
-        <button type="submit" class="btn btn-primary login-btn body-text" :disabled="loading">
+        </el-form-item>
+        <el-alert
+          v-if="errorMsg"
+          :title="errorMsg"
+          type="error"
+          show-icon
+          :closable="false"
+          class="error-alert"
+        />
+        <el-button
+          type="primary"
+          size="large"
+          class="login-btn"
+          :loading="loading"
+          @click="handleLogin"
+        >
           {{ loading ? '登录中...' : '登录' }}
-        </button>
-      </form>
-    </div>
+        </el-button>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { login } from '@/api/auth'
+<script setup lang="ts">
+  import { ref, reactive } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { ElMessage } from 'element-plus'
+  import { login } from '@/api/auth'
+  import type { LoginParams } from '@/types/api'
 
-const router = useRouter()
-const form = reactive({
-  account: '',
-  password: ''
-})
-const loading = ref(false)
-const errorMsg = ref('')
+  const router = useRouter()
+  const form = reactive<LoginParams>({
+    account: '',
+    password: ''
+  })
+  const loading = ref(false)
+  const errorMsg = ref('')
 
-const handleLogin = async () => {
-  loading.value = true
-  errorMsg.value = ''
+  const handleLogin = async () => {
+    if (!form.account || !form.password) {
+      errorMsg.value = '请输入账号和密码'
+      return
+    }
 
-  try {
-    const res = await login({
-      account: form.account,
-      password: form.password
-    })
-    
-    // 保存 token
-    localStorage.setItem('ms_token', res.data.access_token)
-    router.push('/dashboard')
-  } catch (error) {
-    console.log(error)
-    errorMsg.value = "登陆失败，请检查账号密码"
-  } finally {
-    loading.value = false
+    loading.value = true
+    errorMsg.value = ''
+
+    try {
+      const res = await login({
+        account: form.account,
+        password: form.password
+      })
+
+      // 保存 token
+      localStorage.setItem('ms_token', res.data.access_token)
+      ElMessage.success('登录成功')
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('登录失败:', error)
+      errorMsg.value = error?.message || '登陆失败，请检查账号密码'
+      ElMessage.error(errorMsg.value)
+    } finally {
+      loading.value = false
+    }
   }
-}
 </script>
 
 <style scoped>
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg);               /* 页面背景 #f5f5f7 */
-}
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
 
-.login-card {
-  background: var(--card);             /* 卡片背景 #ffffff */
-  border-radius: 28px;                 /* 28px 圆角 */
-  padding: 48px;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);  /* 规范轻阴影 */
-}
+  .login-card {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 12px;
+  }
 
-.login-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
+  .login-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
 
-.login-title {
-  color: var(--text);                  /* 主文字 #1d1d1f */
-  margin: 0 0 8px;
-}
+  .login-title {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
 
-.login-subtitle {
-  font-size: 21px;
-  color: var(--secondary);             /* 次要文字 #86868b */
-  margin: 0;
-}
+  .login-subtitle {
+    font-size: 18px;
+    color: var(--secondary);
+    margin: 0;
+  }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+  .error-alert {
+    margin-top: 8px;
+  }
 
-.form-label {
-  color: var(--text);
-}
+  .login-btn {
+    width: 100%;
+    margin-top: 8px;
+  }
 
-.login-input {
-  background: var(--card);
-  border: 1px solid var(--border);     /* 浅细边框 */
-  color: var(--text);
-  padding: 12px 16px;
-  font-size: 17px;
-  border-radius: 8px;                  /* 8px 圆角 */
-}
+  :deep(.el-form-item__label) {
+    font-weight: 500;
+    color: var(--text);
+  }
 
-.login-input::placeholder {
-  color: var(--secondary);
-}
-
-.error-msg {
-  color: var(--danger);                /* 危险 #ff3b30 */
-  text-align: center;
-  padding: 8px;
-  background: rgba(255, 59, 48, 0.1);
-  border-radius: 8px;
-}
-
-.login-btn {
-  padding: 14px;
-  font-size: 17px;
-  margin-top: 8px;
-  border-radius: 8px;                  /* 8px 圆角，禁止 980px */
-}
-
-.login-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+  :deep(.el-input__wrapper) {
+    border-radius: 8px;
+  }
 </style>

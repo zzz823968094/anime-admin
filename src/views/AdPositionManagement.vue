@@ -1,482 +1,418 @@
 <template>
   <div class="ad-position-management">
+    <!-- 搜索栏 -->
+    <el-card shadow="never" class="search-card">
+      <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form-item label="状态">
+          <el-select
+            v-model="searchForm.status"
+            placeholder="全部状态"
+            clearable
+            style="width: 120px"
+          >
+            <el-option label="启用" value="1" />
+            <el-option label="禁用" value="0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>
+            新增广告位
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-    <div class="search-bar">
-      <select v-model="searchForm.status" class="ctrl search-select" @change="handleSearch">
-        <option value="">全部状态</option>
-        <option value="1">启用</option>
-        <option value="0">禁用</option>
-      </select>
-      <button class="btn btn-primary" @click="handleSearch">搜索</button>
-      <button class="btn btn-secondary" @click="handleReset">重置</button>
-
-      <button class="btn btn-primary  btn-add" @click="handleAdd">
-        <span class="btn-icon">+</span> 新增广告位
-      </button>
-    </div>
-
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>广告位编码</th>
-            <th>广告位名称</th>
-            <th>描述</th>
-            <th>显示类型</th>
-            <th>尺寸</th>
-            <th>最大数量</th>
-            <th>排序</th>
-            <th>状态</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="10" class="loading-cell">加载中...</td>
-          </tr>
-          <tr v-else-if="list.length === 0">
-            <td colspan="10" class="empty-cell">暂无数据</td>
-          </tr>
-          <tr v-else v-for="item in list" :key="item.id">
-            <td>{{ item.id }}</td>
-            <td>
-              <code class="code-text">{{ item.positionCode }}</code>
-            </td>
-            <td>{{ item.positionName || '-' }}</td>
-            <td>{{ item.description || '-' }}</td>
-            <td>
-              <span class="type-tag">{{ getDisplayTypeName(item.displayType) }}</span>
-            </td>
-            <td>
-              <span v-if="item.width && item.height">{{ item.width }} × {{ item.height }}</span>
-              <span v-else>-</span>
-            </td>
-            <td>{{ item.maxCount || '-' }}</td>
-            <td>
-              <span class="sort-badge">{{ item.sortOrder || 0 }}</span>
-            </td>
-            <td>
-              <span :class="['status-tag', item.status === 1 ? 'status-normal' : 'status-disabled']">
-                {{ item.status === 1 ? '启用' : '禁用' }}
-              </span>
-            </td>
-            <td class="actions">
-              <button class="btn btn-ghost btn-sm" @click="handleEdit(item)">编辑</button>
-              <button
-                class="btn btn-sm"
-                :class="item.status === 1 ? 'btn-warning' : 'btn-success'"
-                @click="handleToggleStatus(item)"
-              >{{ item.status === 1 ? '禁用' : '启用' }}</button>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(item)">删除</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- 表格 -->
+    <el-card shadow="never" class="table-card">
+      <el-table v-loading="loading" :data="list" border stripe style="width: 100%">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column label="广告位编码" min-width="150">
+          <template #default="{ row }">
+            <code class="code-text">{{ row.positionCode }}</code>
+          </template>
+        </el-table-column>
+        <el-table-column prop="positionName" label="广告位名称" min-width="120">
+          <template #default="{ row }">
+            {{ row.positionName || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="描述" min-width="150">
+          <template #default="{ row }">
+            {{ row.description || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="显示类型" width="100">
+          <template #default="{ row }">
+            <el-tag size="small">{{ getDisplayTypeName(row.displayType) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="尺寸" width="120">
+          <template #default="{ row }">
+            <span v-if="row.width && row.height">{{ row.width }} × {{ row.height }}</span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="maxCount" label="最大数量" width="100">
+          <template #default="{ row }">
+            {{ row.maxCount || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="排序" width="80">
+          <template #default="{ row }">
+            <el-tag size="small">{{ row.sortOrder || 0 }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+              {{ row.status === 1 ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button
+              link
+              :type="row.status === 1 ? 'warning' : 'success'"
+              size="small"
+              @click="handleToggleStatus(row)"
+            >
+              {{ row.status === 1 ? '禁用' : '启用' }}
+            </el-button>
+            <el-button link type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
 
     <!-- 新增/编辑弹窗 -->
-    <div v-if="modalVisible" class="modal-overlay" @click.self="modalVisible = false">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 class="modal-title">{{ editingId ? '编辑广告位' : '新增广告位' }}</h3>
-          <button class="modal-close" @click="modalVisible = false">×</button>
-        </div>
-        <div class="modal-body">
-          <form class="form" @submit.prevent="handleSubmit">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">广告位编码 *</label>
-                <input v-model="form.positionCode" type="text" class="ctrl form-input" placeholder="如: home_banner" required />
-                <small class="form-hint">唯一标识，用于关联广告</small>
-              </div>
-              <div class="form-group">
-                <label class="form-label">广告位名称 *</label>
-                <input v-model="form.positionName" type="text" class="ctrl form-input" placeholder="如: 首页横幅" required />
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">描述</label>
-              <textarea v-model="form.description" class="ctrl form-textarea" placeholder="广告位描述" rows="3"></textarea>
-            </div>
+    <el-dialog
+      v-model="modalVisible"
+      :title="editingId ? '编辑广告位' : '新增广告位'"
+      width="700px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="form" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="广告位编码" required>
+              <el-input v-model="form.positionCode" placeholder="如: home_banner" />
+              <div class="form-hint">唯一标识，用于关联广告</div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="广告位名称" required>
+              <el-input v-model="form.positionName" placeholder="如: 首页横幅" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">显示类型</label>
-                <select v-model="form.displayType" class="ctrl form-select">
-                  <option value="IMAGE">图片</option>
-                  <option value="VIDEO">视频</option>
-                  <option value="HTML">富媒体</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">排序</label>
-                <input v-model.number="form.sortOrder" type="number" class="ctrl form-input" placeholder="数字越小越靠前" min="0" />
-              </div>
-            </div>
+        <el-form-item label="描述">
+          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="广告位描述" />
+        </el-form-item>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">宽度 (px)</label>
-                <input v-model.number="form.width" type="number" class="ctrl form-input" placeholder="可选" min="0" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">高度 (px)</label>
-                <input v-model.number="form.height" type="number" class="ctrl form-input" placeholder="可选" min="0" />
-              </div>
-            </div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="显示类型">
+              <el-select v-model="form.displayType" style="width: 100%">
+                <el-option label="图片" value="IMAGE" />
+                <el-option label="视频" value="VIDEO" />
+                <el-option label="富媒体" value="HTML" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="排序">
+              <el-input-number v-model="form.sortOrder" :min="0" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">最大广告数</label>
-                <input v-model.number="form.maxCount" type="number" class="ctrl form-input" placeholder="该位置最多展示的广告数" min="1" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">状态</label>
-                <select v-model.number="form.status" class="ctrl form-select">
-                  <option :value="1">启用</option>
-                  <option :value="0">禁用</option>
-                </select>
-              </div>
-            </div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="宽度 (px)">
+              <el-input-number
+                v-model="form.width"
+                :min="0"
+                style="width: 100%"
+                placeholder="可选"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="高度 (px)">
+              <el-input-number
+                v-model="form.height"
+                :min="0"
+                style="width: 100%"
+                placeholder="可选"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-            <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="modalVisible = false">取消</button>
-              <button type="submit" class="btn btn-primary" :disabled="submitting">
-                {{ submitting ? '保存中...' : '保存' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="最大广告数">
+              <el-input-number
+                v-model="form.maxCount"
+                :min="1"
+                style="width: 100%"
+                placeholder="该位置最多展示的广告数"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态">
+              <el-select v-model="form.status" style="width: 100%">
+                <el-option label="启用" :value="1" />
+                <el-option label="禁用" :value="0" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { getAllPositions, createPosition, updatePosition, deletePosition } from '@/api/adPosition.js'
+<script setup lang="ts">
+  import { ref, reactive, onMounted } from 'vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { Plus } from '@element-plus/icons-vue'
+  import { getAllPositions, createPosition, updatePosition, deletePosition } from '@/api/adPosition'
+  import type { AdPosition } from '@/types/api'
 
-const loading = ref(false)
-const list = ref([])
-const searchForm = reactive({ status: '' })
+  const loading = ref(false)
+  const list = ref<AdPosition[]>([])
+  const searchForm = reactive({ status: '' })
 
-const modalVisible = ref(false)
-const editingId = ref(null)
-const submitting = ref(false)
-const errorMsg = ref('')
+  const modalVisible = ref(false)
+  const editingId = ref<number | null>(null)
+  const submitting = ref(false)
 
-const form = reactive({
-  id: null,
-  positionCode: '',
-  positionName: '',
-  description: '',
-  displayType: 'IMAGE',
-  width: null,
-  height: null,
-  maxCount: 1,
-  status: 1,
-  sortOrder: 0
-})
-
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await getAllPositions()
-    if (res.code === 200) {
-      let data = res.data || []
-      // 前端过滤状态
-      if (searchForm.status !== '') {
-        const statusNum = parseInt(searchForm.status)
-        data = data.filter(item => item.status === statusNum)
-      }
-      list.value = data
-    }
-  } catch (e) {
-    console.error('获取广告位列表失败:', e)
-    errorMsg.value = '获取列表失败'
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  fetchList()
-}
-
-function handleReset() {
-  searchForm.status = ''
-  fetchList()
-}
-
-function handleAdd() {
-  editingId.value = null
-  Object.assign(form, {
-    id: null,
+  const form = reactive({
+    id: null as number | null,
     positionCode: '',
     positionName: '',
     description: '',
     displayType: 'IMAGE',
-    width: null,
-    height: null,
+    width: null as number | null,
+    height: null as number | null,
     maxCount: 1,
     status: 1,
     sortOrder: 0
   })
-  errorMsg.value = ''
-  modalVisible.value = true
-}
 
-function handleEdit(item) {
-  editingId.value = item.id
-  Object.assign(form, {
-    id: item.id,
-    positionCode: item.positionCode || '',
-    positionName: item.positionName || '',
-    description: item.description || '',
-    displayType: item.displayType || 'IMAGE',
-    width: item.width,
-    height: item.height,
-    maxCount: item.maxCount !== null ? item.maxCount : 1,
-    status: item.status !== undefined ? item.status : 1,
-    sortOrder: item.sortOrder || 0
-  })
-  errorMsg.value = ''
-  modalVisible.value = true
-}
-
-async function handleSubmit() {
-  submitting.value = true
-  errorMsg.value = ''
-  try {
-    const payload = { 
-      ...form,
-      sortOrder: Number(form.sortOrder) || 0,
-      status: Number(form.status)
-    }
-    
-    // 移除空字符串和null字段
-    Object.keys(payload).forEach(key => {
-      if (payload[key] === '' || payload[key] === null) {
-        delete payload[key]
+  async function fetchList() {
+    loading.value = true
+    try {
+      const res = await getAllPositions()
+      let data = res.data || []
+      // 前端过滤状态
+      if (searchForm.status !== '') {
+        const statusNum = parseInt(searchForm.status)
+        data = data.filter((item: AdPosition) => item.status === statusNum)
       }
-    })
-    
-    if (editingId.value) {
-      await updatePosition(editingId.value, payload)
-    } else {
-      delete payload.id
-      await createPosition(payload)
+      list.value = data
+    } catch (error: any) {
+      ElMessage.error(error.message || '获取列表失败')
+    } finally {
+      loading.value = false
     }
-    modalVisible.value = false
+  }
+
+  function handleSearch() {
     fetchList()
-  } catch (e) {
-    errorMsg.value = e?.response?.data?.message || '操作失败'
-  } finally {
-    submitting.value = false
   }
-}
 
-async function handleToggleStatus(item) {
-  try {
-    const newStatus = item.status === 1 ? 0 : 1
-    await updatePosition(item.id, { ...item, status: newStatus })
+  function handleReset() {
+    searchForm.status = ''
     fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '操作失败')
   }
-}
 
-async function handleDelete(item) {
-  if (!confirm(`确定删除广告位 "${item.positionName}"？`)) return
-  try {
-    await deletePosition(item.id)
-    fetchList()
-  } catch (e) {
-    alert(e?.response?.data?.message || '删除失败')
+  function handleAdd() {
+    editingId.value = null
+    Object.assign(form, {
+      id: null,
+      positionCode: '',
+      positionName: '',
+      description: '',
+      displayType: 'IMAGE',
+      width: null,
+      height: null,
+      maxCount: 1,
+      status: 1,
+      sortOrder: 0
+    })
+    modalVisible.value = true
   }
-}
 
-function getDisplayTypeName(type) {
-  const typeMap = {
-    IMAGE: '图片',
-    VIDEO: '视频',
-    HTML: '富媒体'
+  function handleEdit(item: AdPosition) {
+    editingId.value = item.id
+    Object.assign(form, {
+      id: item.id,
+      positionCode: item.positionCode || '',
+      positionName: item.positionName || '',
+      description: item.description || '',
+      displayType: item.displayType || 'IMAGE',
+      width: item.width,
+      height: item.height,
+      maxCount: item.maxCount !== null ? item.maxCount : 1,
+      status: item.status !== undefined ? item.status : 1,
+      sortOrder: item.sortOrder || 0
+    })
+    modalVisible.value = true
   }
-  return typeMap[type] || type || '-'
-}
 
-onMounted(fetchList)
+  async function handleSubmit() {
+    submitting.value = true
+    try {
+      const payload = {
+        ...form,
+        sortOrder: Number(form.sortOrder) || 0,
+        status: Number(form.status)
+      }
+
+      // 移除空字符串和null字段
+      Object.keys(payload).forEach((key) => {
+        if (payload[key] === '' || payload[key] === null) {
+          delete payload[key]
+        }
+      })
+
+      if (editingId.value) {
+        await updatePosition(editingId.value, payload)
+        ElMessage.success('更新成功')
+      } else {
+        delete payload.id
+        await createPosition(payload)
+        ElMessage.success('创建成功')
+      }
+      modalVisible.value = false
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '操作失败')
+    } finally {
+      submitting.value = false
+    }
+  }
+
+  async function handleToggleStatus(item: AdPosition) {
+    try {
+      const newStatus = item.status === 1 ? 0 : 1
+      await updatePosition(item.id, { ...item, status: newStatus })
+      ElMessage.success('状态更新成功')
+      fetchList()
+    } catch (e: any) {
+      ElMessage.error(e.message || '操作失败')
+    }
+  }
+
+  async function handleDelete(item: AdPosition) {
+    try {
+      await ElMessageBox.confirm(`确定删除广告位 "${item.positionName}"？`, '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      await deletePosition(item.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    } catch (e: any) {
+      if (e !== 'cancel') {
+        ElMessage.error(e.message || '删除失败')
+      }
+    }
+  }
+
+  function getDisplayTypeName(type?: string) {
+    const typeMap: Record<string, string> = {
+      IMAGE: '图片',
+      VIDEO: '视频',
+      HTML: '富媒体'
+    }
+    return typeMap[type || ''] || type || '-'
+  }
+
+  onMounted(fetchList)
 </script>
 
 <style scoped>
-.ad-position-management { padding: 24px; }
+  .ad-position-management {
+    padding: 24px;
+  }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;                 /* 加大底部间距 */
-}
+  .search-card {
+    margin-bottom: 20px;
+  }
 
-.page-title {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  font-size: 24px;                     /* 统一标题大小 */
-  font-weight: 600;                    /* 统一字重 */
-  color: var(--text);                  /* 主文字 #1d1d1f - 清晰可见 */
-  margin: 0;
-  letter-spacing: -0.2px;
-}
+  .table-card {
+    margin-bottom: 20px;
+  }
 
-.search-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
+  .code-text {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--el-color-primary);
+  }
 
-.search-select { min-width: 130px; }
+  .form-hint {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    margin-top: 4px;
+  }
+  .data-table td {
+    padding: 14px 16px;
+    font-size: 15px; /* 统一字体大小 */
+    color: var(--text); /* 主文字 #1d1d1f */
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .data-table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02);
+  } /* 悬停效果 */
 
-.table-container {
-  background: var(--card);             /* 白色背景 */
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
+  .code-text {
+    background: rgba(99, 102, 241, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #a78bfa;
+  }
+  .form-hint {
+    font-size: 12px;
+    color: var(--secondary); /* 次要文字 */
+    margin-top: 4px;
+  }
 
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table thead { background: var(--bg); }  /* 浅灰表头背景 */
-.data-table th {
-  padding: 14px 16px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--secondary);             /* 次要文字 #86868b */
-  letter-spacing: -0.1px;
-  border-bottom: 1px solid var(--border);
-}
-.data-table td {
-  padding: 14px 16px;
-  font-size: 15px;                     /* 统一字体大小 */
-  color: var(--text);                  /* 主文字 #1d1d1f */
-  border-bottom: 1px solid var(--border);
-}
-.data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover { background: rgba(0, 0, 0, 0.02); }  /* 悬停效果 */
-.loading-cell, .empty-cell { text-align: center; padding: 40px 16px; color: var(--secondary); }
-
-.actions { display: flex; gap: 8px; }
-
-.code-text {
-  background: rgba(99,102,241,0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  color: #a78bfa;
-}
-
-.type-tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-  background: rgba(0, 113, 227, 0.12); /* 苹果蓝背景 */
-  color: var(--accent);                /* 苹果蓝文字 */
-}
-
-.sort-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-  background: rgba(0, 113, 227, 0.12); /* 苹果蓝背景 */
-  color: var(--accent);                /* 苹果蓝文字 */
-}
-
-.status-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 8px;                  /* 8px 圆角 */
-  font-size: 12px;
-  font-weight: 500;
-}
-.status-normal { background: rgba(52, 199, 89, 0.12); color: var(--success); }   /* 成功绿 */
-.status-disabled { background: rgba(255, 59, 48, 0.12); color: var(--danger); }  /* 危险红 */
-
-/* 弹窗 - Apple 风格 */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);      /* 弱化遮罩 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);         /* 毛玻璃效果 */
-}
-.modal {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 28px;                 /* 28px 圆角 */
-  width: 90%;
-  max-width: 640px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);  /* 柔和阴影 */
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 28px;                  /* 加大内边距 */
-  border-bottom: 1px solid var(--border);
-}
-.modal-title { 
-  font-size: 20px; 
-  font-weight: 600; 
-  color: var(--text);                  /* 主文字 #1d1d1f */
-  margin: 0;
-  letter-spacing: -0.2px;
-}
-.modal-close {
-  width: 32px; height: 32px;
-  border: none; background: rgba(0, 0, 0, 0.06); color: var(--secondary);
-  font-size: 20px; cursor: pointer; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.modal-close:hover { background: rgba(0, 0, 0, 0.1); color: var(--text); }
-.modal-body { padding: 28px; }         /* 加大内边距 */
-
-.form { display: flex; flex-direction: column; gap: 16px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-label { font-size: 13px; font-weight: 500; color: var(--text); }
-.form-input, .form-select { padding: 10px 14px; font-size: 14px; }
-.form-textarea { 
-  padding: 10px 14px; 
-  font-size: 14px; 
-  resize: vertical;
-  font-family: inherit;
-}
-.form-hint {
-  font-size: 12px;
-  color: var(--secondary);             /* 次要文字 */
-  margin-top: 4px;
-}
-
-.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
-.error-msg {
-  color: var(--danger);                /* 危险色 #ff3b30 */
-  font-size: 13px;
-  padding: 8px; 
-  background: rgba(255, 59, 48, 0.12); 
-  border-radius: 8px;
-}
-.btn-icon { font-size: 16px; margin-right: 4px; }
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .error-msg {
+    color: var(--danger); /* 危险色 #ff3b30 */
+    font-size: 13px;
+    padding: 8px;
+    background: rgba(255, 59, 48, 0.12);
+    border-radius: 8px;
+  }
+  .btn-icon {
+    font-size: 16px;
+    margin-right: 4px;
+  }
 </style>
