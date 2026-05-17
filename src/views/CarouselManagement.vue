@@ -236,7 +236,7 @@
         type: searchForm.type || undefined,
         status: searchForm.status || undefined
       })
-      list.value = res.data.list || []
+      list.value = res.data.records || []
       pagination.total = res.data.total
     } catch (error: any) {
       ElMessage.error(error.message || '加载失败')
@@ -322,7 +322,7 @@
         page: 1,
         size: 10
       })
-      animeSearchResults.value = res.data.list || []
+      animeSearchResults.value = res.data.records || []
     } catch (e: any) {
       ElMessage.error(e.message || '搜索失败')
       animeSearchResults.value = []
@@ -533,23 +533,5 @@
     font-size: 14px;
     color: var(--text);
     font-weight: 500;
-  }
-  .btn-clear {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .btn-clear:hover {
-    background: rgba(239, 68, 68, 0.4);
   }
 </style>
