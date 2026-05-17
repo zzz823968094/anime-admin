@@ -116,45 +116,13 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   import { crawlNow, crawlerAllSync } from '@/utils/api'
-  import { getFailRecords, restartCrawler } from '@/api/crawler'
 
   const crawlLog = ref('点击上方按钮触发爬取任务')
   const crawlLogType = ref('')
-  const chinaTotal = ref(0)
-  const japanTotal = ref(0)
-  const usaTotal = ref(0)
 
   const setLog = (msg: string, type = '') => {
     crawlLog.value = msg
     crawlLogType.value = type
-  }
-
-  const getFailList = async () => {
-    try {
-      const res = await getFailRecords()
-      if (res.code === 200) {
-        chinaTotal.value = res.data.china
-        japanTotal.value = res.data.japan
-        usaTotal.value = res.data.usa
-      }
-    } catch (e: any) {
-      setLog('获取失败记录失败: ' + (e.message || '未知错误'), 'err')
-    }
-  }
-
-  const restartFail = async (type: string) => {
-    setLog(`正在启动${type}动漫失败ID重新获取...`, 'loading')
-    try {
-      const res = await restartCrawler(type)
-      if (res.code === 200) {
-        await getFailList()
-        setLog(`${type}动漫失败ID重新获取,获取成功`, 'ok')
-      } else {
-        setLog('重新获取数据失败: ' + res.message, 'err')
-      }
-    } catch (e: any) {
-      setLog('重新获取数据失败: ' + (e.message || '未知错误'), 'err')
-    }
   }
 
   const crawlByHour = async (type: number, hour: number) => {
@@ -180,7 +148,6 @@
   }
 
   onMounted(() => {
-    getFailList()
     setLog('准备就绪，请选择爬取任务')
   })
 </script>
