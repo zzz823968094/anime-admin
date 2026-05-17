@@ -156,7 +156,7 @@
         <el-table-column prop="deviceModel" label="设备型号" min-width="150" />
         <el-table-column prop="osName" label="操作系统" width="120">
           <template #default="{ row }">
-            <el-tag size="small">{{ row.osName }}</el-tag>
+            <el-tag size="small">{{ row.os }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="userCount" label="访问人数" width="120">
@@ -199,7 +199,6 @@
 
 <script setup lang="ts">
   import { ref, reactive, onMounted, nextTick, onUnmounted, computed } from 'vue'
-  import { useRouter } from 'vue-router'
   import { ElMessage } from 'element-plus'
   import {
     Tools,
@@ -208,12 +207,7 @@
     Clock,
     TrendCharts,
     Cellphone,
-    Monitor,
-    UserFilled,
-    Picture,
-    Star,
-    Document,
-    ArrowRight
+    UserFilled
   } from '@element-plus/icons-vue'
   import {
     getAnimeStats,
@@ -226,15 +220,6 @@
     toggleSystemUpdate
   } from '@/utils/api'
   import * as echarts from 'echarts'
-
-  const router = useRouter()
-
-  const TYPE_MAP: Record<string, string> = { '67': '🇯🇵 日韩', '68': '🌎 欧美', '66': '🇨🇳 中文' }
-  const STATUS_MAP: Record<number, [string, string]> = {
-    0: ['连载中', 'b-green'],
-    1: ['已完结', 'b-blue'],
-    2: ['已下线', 'b-red']
-  }
 
   // 系统更新状态
   const systemUpdate = reactive({
@@ -612,30 +597,6 @@
     } finally {
       loadingUpdate.value = false
     }
-  }
-
-  // 格式化日期
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) {
-      return '-'
-    }
-    const date = new Date(dateStr)
-    return date.toLocaleString('zh-CN')
-  }
-
-  // 跳转到番剧详情
-  const goToAnimeDetail = (id: number) => {
-    router.push({ name: 'AnimeList', query: { id } })
-  }
-
-  // 获取状态类型
-  const getStatusType = (status: number): 'success' | 'warning' | 'danger' | 'info' => {
-    const typeMap: Record<number, 'success' | 'warning' | 'danger' | 'info'> = {
-      0: 'success',
-      1: 'primary',
-      2: 'danger'
-    }
-    return typeMap[status] || 'info'
   }
 
   onMounted(() => {

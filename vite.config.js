@@ -19,6 +19,13 @@ export default defineConfig(({ mode }) => {
       open: true,
       // 代理配置 - 解决跨域问题
       proxy: {
+        // 文件上传接口代理到8086端口（更具体的路径放前面）
+        '/api/admin/app-versions/upload': {
+          target: 'http://localhost:8086',
+          changeOrigin: true,
+          secure: false
+        },
+        // 其他API接口代理到8080端口
         '/api': {
           target: 'http://localhost:8080',
           changeOrigin: true,

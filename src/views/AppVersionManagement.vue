@@ -52,8 +52,8 @@
         <el-table-column prop="versionName" label="版本名称" min-width="120" />
         <el-table-column label="强制更新" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.forceUpdate ? 'danger' : 'info'" size="small">
-              {{ row.forceUpdate ? '强制' : '可选' }}
+            <el-tag :type="row.forceUpdate ? 'danger' : 'success'" size="small">
+              {{ row.forceUpdate ? '强制' : '非强制' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -86,6 +86,11 @@
               {{ row.status === 'active' ? '停用' : '启用' }}
             </el-button>
             <el-button link type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+             <el-button link type="success" size="small">
+               <a :href="row.downloadUrl" target="_blank" style="text-decoration: none; color: inherit;">
+                 下载
+               </a>
+             </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -297,7 +302,16 @@
     modalVisible.value = true
   }
 
-  async function handleFileUpload(file: File) {
+  async function handleFileUpload(uploadFileItem: any) {
+    // Element Plus Upload 组件的 on-change 事件参数
+    // uploadFileItem.raw 才是真正的 File 对象
+    const file = uploadFileItem.raw || uploadFileItem
+    
+    if (!file) {
+      ElMessage.error('文件获取失败')
+      return
+    }
+    
     // 验证文件类型
     const allowedTypes = ['.apk', '.ipa', '.exe', '.dmg']
     const fileName = file.name.toLowerCase()
@@ -311,12 +325,14 @@
     uploading.value = true
 
     try {
+      // 调用 API 上传文件
       const res = await uploadFile(file)
       form.downloadUrl = res.data.url
       form.fileSize = res.data.size
       selectedFile.value = file
       ElMessage.success('上传成功')
     } catch (e: any) {
+      console.error('文件上传错误:', e)
       ElMessage.error(e.message || '文件上传失败')
     } finally {
       uploading.value = false
