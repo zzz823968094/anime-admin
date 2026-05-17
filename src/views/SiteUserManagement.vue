@@ -162,7 +162,7 @@
         status: searchForm.status || undefined
       })
 
-      userList.value = res.data.list || []
+      userList.value = res.data.records || []
       pagination.total = res.data.total
     } catch (error: any) {
       ElMessage.error(error.message || '加载用户列表失败')

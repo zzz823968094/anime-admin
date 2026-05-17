@@ -68,19 +68,20 @@ export function getLatestVersion(platform: string): Promise<ApiResponse<AppVersi
 
 /**
  * 上传文件
+ * 注意：不要手动设置Content-Type，让浏览器自动设置包含boundary的multipart/form-data
  * @param file - 文件对象
  * @returns Promise<ApiResponse<any>>
  */
 export function uploadFile(file: File): Promise<ApiResponse<any>> {
   const formData = new FormData()
   formData.append('file', file)
+  
   return request({
     url: '/admin/app-versions/upload',
     method: 'post',
     data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
-    timeout: 300000 // 5分钟超时，适用于大文件上传
+    // 重要：不要设置Content-Type，让axios自动处理
+    // axios检测到FormData会自动设置正确的multipart/form-data并包含boundary
+    timeout: 300000, // 5分钟超时，适用于大文件上传
   })
 }

@@ -234,7 +234,7 @@
         platform: searchForm.platform || undefined,
         status: searchForm.status || undefined
       })
-      list.value = res.data.list || []
+      list.value = res.data.records || []
       pagination.total = res.data.total
     } catch (error: any) {
       ElMessage.error(error.message || '加载失败')

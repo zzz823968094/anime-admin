@@ -24,10 +24,11 @@ export interface PageParams {
  * 分页响应数据
  */
 export interface PageResult<T = unknown> {
-  list: T[]
+  records: T[]
   total: number
-  pageNum: number
-  pageSize: number
+  size: number
+  current: number
+  pages: number
 }
 
 /**
