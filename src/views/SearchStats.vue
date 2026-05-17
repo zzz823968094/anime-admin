@@ -46,31 +46,6 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <!-- 最近搜索记录 -->
-    <el-card shadow="never" class="table-card" style="margin-top: 20px">
-      <template #header>
-        <div class="card-header">最近搜索记录</div>
-      </template>
-      <el-table v-loading="loading" :data="recentSearches" border stripe style="width: 100%">
-        <el-table-column prop="keyword" label="关键词" min-width="150" />
-        <el-table-column label="用户" width="120">
-          <template #default="{ row }">
-            {{ row.username || '游客' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="ip" label="IP" width="150">
-          <template #default="{ row }">
-            <span class="sub-text">{{ row.ip }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="时间" min-width="180">
-          <template #default="{ row }">
-            <span class="sub-text">{{ formatTime(row.createdAt) }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
   </div>
 </template>
 
@@ -93,13 +68,6 @@
     }
     const max = hotKeywords.value[0].cnt
     return Math.round((count / max) * 100)
-  }
-
-  const formatTime = (time?: string) => {
-    if (!time) {
-      return '—'
-    }
-    return new Date(time).toLocaleString('zh-CN')
   }
 
   const loadSearchStats = async () => {
@@ -179,13 +147,5 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-
-  .sub-text {
-    color: var(--el-text-color-secondary);
-  }
-
-  .table-card {
-    margin-top: 20px;
   }
 </style>
