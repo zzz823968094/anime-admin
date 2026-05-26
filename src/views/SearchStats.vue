@@ -3,25 +3,34 @@
     <el-card shadow="never" class="stats-card">
       <template #header>
         <div class="card-header">
-          <el-row :gutter="20">
-            <el-col :span="8">门搜索词 TOP 20</el-col>
-            <el-col :span="8"> 累计搜索次数:{{ searchData.totalSearches }}</el-col>
-            <el-col :span="8">不同关键词数:{{ searchData.totalKeywordsCount }}</el-col>
-          </el-row>
+
+          <span class="label">查询&nbsp;&nbsp;  </span>
+          <el-select v-model="defaultDays" placeholder="Select" style="width: 240px;" @change="loadData()">
+            <el-option
+                v-for="item in daysList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+            />
+          </el-select>
+          <span class="label">&nbsp;&nbsp;数据</span>
         </div>
       </template>
-      <div v-if="hotKeywords.length" class="keywords-list">
-        <div v-for="(keyword, index) in hotKeywords" :key="index" class="keyword-item">
-          <span class="keyword-rank">{{ index + 1 }}</span>
-          <span class="keyword-text">{{ keyword.keyword }}</span>
-          <el-progress
-              :percentage="getKeywordPercent(keyword.cnt)"
-              :show-text="false"
-              :stroke-width="4"
-              class="keyword-progress"
-          />
-          <span class="keyword-count">{{ keyword.cnt }}</span>
-        </div>
+      <div v-if="keywordList.length" class="keywords-list">
+        <el-table :data="keywordList" :pagination="pagination" style="width: 100%">
+          <el-table-column type="index" width="50"/>
+          <el-table-column prop="keyword" label="搜索关键词"/>
+          <el-table-column prop="cnt" label="搜索次数"/>
+        </el-table>
+        <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pagination.currentPage"
+            :page-sizes="[10, 20, 30, 40]"
+            :page-size="pagination.pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="pagination.total">
+        </el-pagination>
       </div>
       <el-empty v-else description="暂无搜索数据"/>
     </el-card>
@@ -29,37 +38,65 @@
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, onMounted} from 'vue'
+import {ref, onMounted} from 'vue'
 import {getSearchStats} from '@/utils/api'
 
-const loading = ref(false)
-const searchData = reactive({
-  totalKeywordsCount: 0,
-  totalSearches: 0,
-  avgPerDay: 0
+const keywordList = ref([])
+const pagination = ref({
+  currentPage: 1, // 当前页
+  pageSize: 10, // 每页显示条数
+  total: 0, // 总条数
+  layout: 'total,sizes,prev, pager, next, jumper', // 分页布局
 })
-
-const hotKeywords = ref<any[]>([])
-const recentSearches = ref<any[]>([])
-
-const getKeywordPercent = (count: number) => {
-  if (!hotKeywords.value.length) {
-    return 0
+const defaultDays = ref(1)
+const daysList = ref([
+  {
+    value: 1,
+    label: '1日内',
+  },
+  {
+    value: 3,
+    label: '3日内',
+  },
+  {
+    value: 7,
+    label: '1周内',
+  },
+  {
+    value: 30,
+    label: '1月内',
   }
-  const max = hotKeywords.value[0].cnt
-  return Math.round((count / max) * 100)
+])
+
+const loading = ref(false)
+// 改变分页大小
+const handleSizeChange = async (pageSize: number) => {
+  console.log('handleSizeChange', pageSize)
+  pagination.value.pageSize = pageSize;
+  loadData();
 }
 
-const loadSearchStats = async () => {
+const handleCurrentChange = async (pageNum: number) => {
+  console.log('handleCurrentChange', pageNum)
+  pagination.value.currentPage = pageNum;
+  loadData();
+}
+
+const loadData = () => {
+  loadSearchStats(defaultDays.value)
+}
+
+const loadSearchStats = async (days: number) => {
   loading.value = true
   try {
-    const res = await getSearchStats({limit: 20, days: 7})
+    const res = await getSearchStats({
+      pageNum: pagination.value.currentPage,
+      pageSize: pagination.value.pageSize,
+      days: days
+    })
     const data = res.data
-    hotKeywords.value = data.hotKeywords || []
-    recentSearches.value = data.recentSearches || []
-    searchData.totalSearches = data.totalSearches || 0
-    searchData.totalKeywordsCount = data.totalKeywordsCount || 0
-    searchData.avgPerDay = data.avgPerDay || 0
+    keywordList.value = data.records
+    pagination.value.total = data.total
   } catch (e: any) {
     console.error('加载搜索统计失败', e)
   } finally {
@@ -68,7 +105,7 @@ const loadSearchStats = async () => {
 }
 
 onMounted(() => {
-  loadSearchStats()
+  loadSearchStats(defaultDays.value)
 })
 </script>
 
