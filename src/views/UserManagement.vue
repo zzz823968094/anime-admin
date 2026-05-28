@@ -441,8 +441,8 @@
   }
 
   .table-container {
-    background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
     position: relative;
@@ -487,7 +487,11 @@
   }
 
   .data-table tbody tr:hover {
-    background: rgba(0, 0, 0, 0.02); /* 悬停效果 */
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  html.dark .data-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .loading-cell,
@@ -585,10 +589,10 @@
     height: 32px;
     border: none;
     background: rgba(0, 0, 0, 0.06);
-    color: var(--secondary); /* 次要文字 #86868b */
+    color: var(--secondary);
     font-size: 20px;
     cursor: pointer;
-    border-radius: 50%; /* 圆形 */
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -597,7 +601,15 @@
 
   .modal-close:hover {
     background: rgba(0, 0, 0, 0.1);
-    color: var(--text); /* 主文字 #1d1d1f */
+    color: var(--text);
+  }
+
+  html.dark .modal-close {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  html.dark .modal-close:hover {
+    background: rgba(255, 255, 255, 0.15);
   }
 
   .modal-body {

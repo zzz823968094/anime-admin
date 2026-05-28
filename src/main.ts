@@ -5,6 +5,10 @@ import ElementPlus from 'element-plus'
 // @ts-ignore - Element Plus 语言包模块
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import 'element-plus/dist/index.css'
+// 关键：引入暗黑模式变量
+import 'element-plus/theme-chalk/dark/css-vars.css'
+// 引入自定义主题变量
+import './styles/theme.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import './styles/global.css'
 

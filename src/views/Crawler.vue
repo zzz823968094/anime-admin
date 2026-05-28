@@ -180,18 +180,23 @@
     width: 100%;
     height: auto;
     padding: 15px;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 8px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
+    color: var(--text);
   }
 
   .crawler-btn:hover {
-    background: #e9ecef;
+    background: var(--bg);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  html.dark .crawler-btn:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
 
   .cb-icon {
@@ -201,13 +206,13 @@
 
   .cb-title {
     font-weight: bold;
-    color: #333;
+    color: var(--text);
     margin-bottom: 5px;
   }
 
   .cb-desc {
     font-size: 12px;
-    color: #666;
+    color: var(--secondary);
   }
 
   .crawl-log {
@@ -218,6 +223,9 @@
     word-break: break-all;
     max-height: 200px;
     overflow-y: auto;
+    background: var(--el-fill-color-lighter);
+    color: var(--el-text-color-primary);
+    border: 1px solid var(--el-border-color);
   }
 
   .crawl-log.loading {
@@ -226,15 +234,33 @@
     border: 1px solid #ffeaa7;
   }
 
+  html.dark .crawl-log.loading {
+    background: #3d3522;
+    color: #ffc107;
+    border: 1px solid #5c4d1a;
+  }
+
   .crawl-log.ok {
     background: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
   }
 
+  html.dark .crawl-log.ok {
+    background: #1e3a2f;
+    color: #69db7c;
+    border: 1px solid #2d5a44;
+  }
+
   .crawl-log.err {
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+  }
+
+  html.dark .crawl-log.err {
+    background: #3a1c1e;
+    color: #ff6b6b;
+    border: 1px solid #5a2d2f;
   }
 </style>

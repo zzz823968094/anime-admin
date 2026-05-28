@@ -313,6 +313,64 @@
         <div class="header-content">
           <span class="header-title">{{ currentRouteName }}</span>
         </div>
+        <div class="header-actions">
+          <!-- 颜色主题选择器 -->
+          <el-select
+            v-model="colorTheme"
+            placeholder="选择主题色"
+            size="small"
+            style="width: 120px; margin-right: 8px"
+            @change="(val: ColorTheme) => setColorTheme(val)"
+          >
+            <el-option label="默认蓝" value="" />
+            <el-option label="红色" value="theme-red" />
+            <el-option label="绿色" value="theme-green" />
+            <el-option label="紫色" value="theme-purple" />
+            <el-option label="橙色" value="theme-orange" />
+          </el-select>
+          
+          <button
+            ref="themeToggleRef"
+            class="theme-toggle-btn"
+            @click="handleThemeToggle"
+            :title="isDark() ? '切换到浅色模式' : '切换到深色模式'"
+          >
+            <svg
+              v-if="isDark()"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <svg
+              v-else
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       <!-- 主内容区 -->
@@ -324,11 +382,16 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, ref } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
+  import { useTheme, type ColorTheme } from '@/composables/useTheme'
 
   const route = useRoute()
   const router = useRouter()
+  const { theme, colorTheme, toggleThemeWithTransition, setColorTheme, isDark } = useTheme()
+  
+  // 主题切换按钮的 ref，用于获取点击位置
+  const themeToggleRef = ref<HTMLButtonElement | null>(null)
 
   const currentRoute = computed(() => route.name as string)
 
@@ -360,5 +423,10 @@
   const handleLogout = () => {
     localStorage.removeItem('ms_token')
     router.push('/login')
+  }
+  
+  // 处理主题切换（带动画）
+  const handleThemeToggle = (event: MouseEvent) => {
+    toggleThemeWithTransition(event)
   }
 </script>

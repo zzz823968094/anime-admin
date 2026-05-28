@@ -64,10 +64,111 @@
   --bg-light-gray: var(--bg);
 }
 
+/* ============================================
+   DARK THEME VARIABLES
+   暗色主题变量定义
+   ============================================ */
+
+html.dark {
+  /* 基础背景色 - 暗色模式 */
+  --bg: #1c1c1e; /* 深色页面背景 */
+  --card: #2c2c2e; /* 深色卡片/容器背景 */
+
+  /* 文字颜色 - 暗色模式 */
+  --text: #f5f5f7; /* 浅色主文字 */
+  --secondary: #a1a1a6; /* 浅色次要/辅助文字 */
+
+  /* 主题强调色 - 暗色模式使用更亮的蓝色 */
+  --accent: #0a84ff; /* 暗色主题强调蓝 */
+
+  /* 边框与分割线 - 暗色模式 */
+  --border: rgba(255, 255, 255, 0.15); /* 浅色边框分割线 */
+
+  /* Legacy Compatibility - 暗色模式 */
+  --bg-primary: var(--bg);
+  --bg-secondary: var(--bg);
+  --bg2: var(--card);
+  --bg3: var(--card);
+  --text-primary: var(--text);
+  --text-secondary: var(--secondary);
+  --text-tertiary: var(--secondary);
+  --text-white: #ffffff;
+  --apple-blue: var(--accent);
+  --link-blue-light: var(--accent);
+  --link-blue-dark: var(--accent);
+  --surface-dark-1: var(--card);
+  --surface-dark-2: var(--card);
+  --surface-dark-3: var(--card);
+  --surface-dark-4: var(--card);
+  --surface-dark-5: var(--card);
+  --dark-surface-1: var(--card);
+  --btn-active: #3a3a3c;
+  --btn-default-light: #3a3a3c;
+  --overlay: rgba(44, 44, 46, 0.8);
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --glow: rgba(10, 132, 255, 0.2);
+  --gold: #ffd60a;
+  --text-near-black: var(--text);
+  --text-black-48: var(--secondary);
+  --text-black-80: var(--text);
+  --bg-light-gray: var(--bg);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* ============================================
+   THEME TRANSITION ANIMATION
+   主题切换过渡动画 - 类似 Element Plus
+   注意：使用 View Transitions API 时，这些过渡会被禁用
+   保留作为不支持 View Transitions API 浏览器的降级方案
+   ============================================ */
+
+html,
+body,
+.sidebar,
+.right-panel,
+.top-header,
+.main,
+.card,
+.stat-card,
+.btn,
+.ctrl,
+.tbl,
+.modal,
+.sb-item,
+.pg-btn,
+.badge,
+.crawler-btn {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* ============================================
+   VIEW TRANSITIONS API STYLES
+   用于圆形扩散/收缩动画的伪元素样式
+   ============================================ */
+
+/* 禁用默认的淡入淡出动画，使用自定义 clip-path */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* 浅色模式：新快照在上层（从点击处扩散） */
+html::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* 暗色模式：旧快照在上层（向点击处收缩） */
+html.dark::view-transition-old(root) {
+  z-index: 9999;
 }
 
 body {
@@ -442,6 +543,12 @@ select.ctrl option {
   z-index: 100;
 }
 
+/* 暗色模式下的侧边栏 */
+html.dark .sidebar {
+  background: rgba(28, 28, 30, 0.72);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* 右侧主体区域 */
 .right-panel {
   margin-left: 240px;
@@ -451,6 +558,11 @@ select.ctrl option {
   min-width: 0; /* 防止内容溢出 */
   background: #f5f5f7; /* Apple 浅灰背景 */
   height: 100vh; /* 占满视口高度以实现内部滚动 */
+}
+
+/* 暗色模式下的右侧面板 */
+html.dark .right-panel {
+  background: #1c1c1e;
 }
 
 /* 顶部 Header 栏 - Apple 风格 (固定不滚动) */
@@ -463,10 +575,64 @@ select.ctrl option {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08); /* 细分割线 */
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 32px;
   z-index: 90;
   position: sticky; /* 粘性定位 */
   top: 0;
+}
+
+/* 暗色模式下的顶栏 */
+html.dark .top-header {
+  background: rgba(28, 28, 30, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-content {
+  flex: 1;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 主题切换按钮 */
+.theme-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+  padding: 0;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+html.dark .theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
 }
 
 .sb-logo {
@@ -528,10 +694,8 @@ select.ctrl option {
   background: rgba(0, 0, 0, 0.04);
 }
 
-@media (prefers-color-scheme: dark) {
-  .sb-item:hover {
-    background: rgba(255, 255, 255, 0.04);
-  }
+html.dark .sb-item:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .sb-item.on {
@@ -547,8 +711,16 @@ select.ctrl option {
   flex-shrink: 0;
 }
 
+html.dark .sb-item .ic {
+  stroke: #f5f5f7; /* 暗色模式下的浅色图标 */
+}
+
 .sb-item.on .ic {
   stroke: #0071e3; /* 选中状态苹果蓝 */
+}
+
+html.dark .sb-item.on .ic {
+  stroke: #0a84ff; /* 暗色模式下更亮的蓝色 */
 }
 
 .sb-bottom {
@@ -723,6 +895,13 @@ select.ctrl option {
   padding: 32px; /* 加大内边距 32px */
   margin-bottom: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); /* Apple 风格轻微阴影 */
+}
+
+/* 暗色模式下的卡片样式 */
+html.dark .card {
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .sec-title {

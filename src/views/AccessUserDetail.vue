@@ -148,10 +148,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { ref, reactive, onMounted, onUnmounted, nextTick, computed } from 'vue'
   import * as echarts from 'echarts'
   import { getRetentionRate, getLocationStats, updateLocation } from '@/api/accessUserDetail'
+  import { useTheme } from '@/composables/useTheme'
+
+  const { isDark } = useTheme()
 
   // ==================== 留存率相关 ====================
 
@@ -456,12 +459,13 @@
     console.log('渲染图表数据:', { provinces, series })
 
     // ECharts配置 - 使用堆叠柱状图展示地域分布
+    const isDarkMode = isDark()
     const option = {
       title: {
         text: '用户地域分布 (按省份/城市)',
         left: 'center',
         textStyle: {
-          color: '#1d1d1f',
+          color: isDarkMode ? '#f5f5f7' : '#1d1d1f',
           fontSize: 18,
           fontWeight: 600
         }
@@ -470,6 +474,11 @@
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },
+        backgroundColor: isDarkMode ? 'rgba(44, 44, 46, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
+        textStyle: {
+          color: isDarkMode ? '#f5f5f7' : '#1d1d1f'
         }
       },
       legend: {
@@ -477,7 +486,7 @@
         orient: 'horizontal',
         bottom: 0,
         textStyle: {
-          color: '#86868b'
+          color: isDarkMode ? '#a1a1a6' : '#86868b'
         }
       },
       grid: {
@@ -491,14 +500,14 @@
         type: 'category',
         data: provinces,
         axisLabel: {
-          color: '#86868b',
+          color: isDarkMode ? '#a1a1a6' : '#86868b',
           rotate: 45,
           interval: 0,
           fontSize: 12
         },
         axisLine: {
           lineStyle: {
-            color: 'rgba(0, 0, 0, 0.08)'
+            color: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)'
           }
         }
       },
@@ -506,20 +515,20 @@
         type: 'value',
         name: 'IP数',
         nameTextStyle: {
-          color: '#86868b'
+          color: isDarkMode ? '#a1a1a6' : '#86868b'
         },
         axisLabel: {
-          color: '#86868b',
+          color: isDarkMode ? '#a1a1a6' : '#86868b',
           fontSize: 12
         },
         axisLine: {
           lineStyle: {
-            color: 'rgba(0, 0, 0, 0.08)'
+            color: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)'
           }
         },
         splitLine: {
           lineStyle: {
-            color: 'rgba(0, 0, 0, 0.06)'
+            color: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
           }
         }
       },
@@ -545,6 +554,15 @@
     }
   }
 
+  /**
+   * 监听主题变化，重新渲染图表
+   */
+  const handleThemeChange = () => {
+    if (locationData.value && locationData.value.length > 0) {
+      renderMap()
+    }
+  }
+
   // ==================== 生命周期 ====================
 
   onMounted(() => {
@@ -563,11 +581,30 @@
 
     // 添加窗口resize事件监听
     window.addEventListener('resize', handleResize)
+    
+    // 监听主题变化
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          handleThemeChange()
+        }
+      })
+    })
+    observer.observe(document.documentElement, { attributes: true })
+    
+    // 保存 observer 以便卸载
+    ;(window as any).__themeObserver__ = observer
   })
 
   onUnmounted(() => {
     // 移除事件监听
     window.removeEventListener('resize', handleResize)
+    
+    // 移除主题监听
+    if ((window as any).__themeObserver__) {
+      ;(window as any).__themeObserver__.disconnect()
+      delete (window as any).__themeObserver__
+    }
 
     // 销毁地图实例
     if (mapInstance) {
@@ -634,6 +671,10 @@
     background: rgba(0, 0, 0, 0.06);
     border-radius: 4px;
     overflow: hidden;
+  }
+
+  html.dark .progress-bar-container {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   .progress-bar-fill {
