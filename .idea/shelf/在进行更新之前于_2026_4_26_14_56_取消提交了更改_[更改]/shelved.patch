@@ -1,0 +1,284 @@
+Index: .env.example
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.env.example b/.env.example
+new file mode 100644
+--- /dev/null	(date 1777186226414)
++++ b/.env.example	(date 1777186226414)
+@@ -0,0 +1,5 @@
++# 环境变量示例文件
++# 复制此文件为 .env.development 或 .env.production 并根据需要修改
++
++# API 基础地址
++VITE_API_BASE_URL=http://localhost:8080
+\ No newline at end of file
+Index: package.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"name\": \"anime-admin\",\r\n  \"version\": \"1.0.0\",\r\n  \"private\": true,\r\n  \"type\": \"module\",\r\n  \"scripts\": {\r\n    \"dev\": \"vite\",\r\n    \"build\": \"vite build\",\r\n    \"preview\": \"vite preview\"\r\n  },\r\n  \"dependencies\": {\r\n    \"vue\": \"^3.4.21\",\r\n    \"vue-router\": \"^4.3.0\",\r\n    \"axios\": \"^1.6.8\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@vitejs/plugin-vue\": \"^5.0.4\",\r\n    \"vite\": \"^5.2.8\"\r\n  }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/package.json b/package.json
+--- a/package.json	(revision f080a09850211f95543dc5533e1f16d9f63c0429)
++++ b/package.json	(date 1777186403499)
+@@ -4,8 +4,10 @@
+   "private": true,
+   "type": "module",
+   "scripts": {
+-    "dev": "vite",
+-    "build": "vite build",
++    "dev": "vite --mode development",
++    "dev:prod": "vite --mode production",
++    "build": "vite build --mode production",
++    "build:dev": "vite build --mode development",
+     "preview": "vite preview"
+   },
+   "dependencies": {
+Index: .dockerignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.dockerignore b/.dockerignore
+new file mode 100644
+--- /dev/null	(date 1777186342736)
++++ b/.dockerignore	(date 1777186342736)
+@@ -0,0 +1,42 @@
++# 依赖
++node_modules
++npm-debug.log*
++yarn-debug.log*
++yarn-error.log*
++
++# 环境变量（开发环境）
++.env.development
++.env.local
++.env.*.local
++
++# 注意：.env.production 需要被复制到 Docker 镜像中用于构建
++
++# Git
++.git
++.gitignore
++
++# IDE
++.idea
++.vscode
++*.swp
++*.swo
++
++# 文档
++README.md
++*.md
++
++# 测试
++coverage
++.nyc_output
++
++# Docker
++Dockerfile
++docker-compose.yml
++.dockerignore
++
++# 脚本
++deploy.sh
++
++# 其他
++.qwen
++dist
+\ No newline at end of file
+Index: src/api/request.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import axios from 'axios'\r\n\r\n// 创建 axios 实例\r\nconst request = axios.create({\r\n    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://lsj.animeparadise.vip',\r\n    // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',\r\n    timeout: 10000,\r\n    headers: {\r\n        'Content-Type': 'application/json'\r\n    }\r\n})\r\n\r\n// 请求拦截器\r\nrequest.interceptors.request.use(\r\n    (config) => {\r\n        const token = localStorage.getItem('ms_token')\r\n        if (token) {\r\n            config.headers.Authorization = `Bearer ${token}`\r\n        }\r\n        return config\r\n    },\r\n    (error) => {\r\n        return Promise.reject(error)\r\n    }\r\n)\r\n\r\n// 响应拦截器\r\nrequest.interceptors.response.use(\r\n    (response) => {\r\n        const res = response.data\r\n\r\n        // 统一响应格式处理\r\n        if (res.code !== 200) {\r\n            const message = res.message || '请求失败'\r\n\r\n            // 401 未授权，跳转到登录页\r\n            if (res.code === 401) {\r\n                localStorage.removeItem('ms_token')\r\n                window.location.href = '/login'\r\n                return Promise.reject(new Error(message))\r\n            }\r\n\r\n            // 403 账号被禁用\r\n            if (res.code === 403) {\r\n                return Promise.reject(new Error(message))\r\n            }\r\n\r\n            return Promise.reject(new Error(message))\r\n        }\r\n\r\n        return res\r\n    },\r\n    (error) => {\r\n        const message = error.response?.data?.message || error.message || '网络错误'\r\n\r\n        if (error.response?.status === 401) {\r\n            localStorage.removeItem('ms_token')\r\n            window.location.href = '/login'\r\n        }\r\n\r\n        return Promise.reject(error)\r\n    }\r\n)\r\n\r\nexport default request\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/api/request.js b/src/api/request.js
+--- a/src/api/request.js	(revision f080a09850211f95543dc5533e1f16d9f63c0429)
++++ b/src/api/request.js	(date 1777186203797)
+@@ -1,9 +1,9 @@
+ import axios from 'axios'
++import { getBaseURL } from '@/config/api.config'
+ 
+ // 创建 axios 实例
+ const request = axios.create({
+-    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://lsj.animeparadise.vip',
+-    // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
++    baseURL: getBaseURL(),
+     timeout: 10000,
+     headers: {
+         'Content-Type': 'application/json'
+Index: Dockerfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># 构建阶段\r\nFROM node:18-alpine AS builder\r\n\r\nWORKDIR /app\r\n\r\n# 复制package文件\r\nCOPY package*.json ./\r\n\r\n# 安装依赖\r\nRUN npm ci\r\n\r\n# 复制源代码\r\nCOPY . .\r\n\r\n# 构建生产版本\r\nRUN npm run build\r\n\r\n# 生产阶段\r\nFROM nginx:alpine\r\n\r\n# 复制自定义nginx配置\r\nCOPY nginx.conf /etc/nginx/conf.d/default.conf\r\n\r\n# 复制构建产物到nginx\r\nCOPY --from=builder /app/dist /usr/share/nginx/html\r\n\r\n# 暴露端口\r\nEXPOSE 3001\r\n\r\n# 启动nginx\r\nCMD [\"nginx\", \"-g\", \"daemon off;\"]\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Dockerfile b/Dockerfile
+--- a/Dockerfile	(revision f080a09850211f95543dc5533e1f16d9f63c0429)
++++ b/Dockerfile	(date 1777186534805)
+@@ -9,10 +9,10 @@
+ # 安装依赖
+ RUN npm ci
+ 
+-# 复制源代码
++# 复制源代码（包括 .env.production）
+ COPY . .
+ 
+-# 构建生产版本
++# 构建生产版本（使用 production 模式，自动读取 .env.production）
+ RUN npm run build
+ 
+ # 生产阶段
+Index: src/utils/api.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import axios from 'axios'\r\n\r\nconst API_BASE = 'https://lsj.animeparadise.vip'\r\n// const API_BASE = 'http://localhost:8080'\r\n\r\nconst api = axios.create({\r\n  baseURL: API_BASE,\r\n  timeout: 30000,\r\n  headers: {\r\n    'Content-Type': 'application/json'\r\n  }\r\n})\r\n\r\n// 请求拦截器 - 添加 token\r\napi.interceptors.request.use(\r\n  (config) => {\r\n    const token = localStorage.getItem('ms_token')\r\n    if (token) {\r\n      config.headers.Authorization = `Bearer ${token}`\r\n    }\r\n    return config\r\n  },\r\n  (error) => {\r\n    return Promise.reject(error)\r\n  }\r\n)\r\n\r\n// 响应拦截器\r\napi.interceptors.response.use(\r\n  (response) => {\r\n    return response.data\r\n  },\r\n  (error) => {\r\n    if (error.response) {\r\n      if (error.response.status === 401) {\r\n        localStorage.removeItem('ms_token')\r\n        window.location.href = '/login'\r\n      }\r\n    }\r\n    return Promise.reject(error)\r\n  }\r\n)\r\n\r\n// 通用请求方法\r\nexport const get = (url, params = {}) => {\r\n  return api.get(url, { params })\r\n}\r\n\r\nexport const post = (url, data = {}, config = {}) => {\r\n  return api.post(url, data, config)\r\n}\r\n\r\nexport const put = (url, data = {}, config = {}) => {\r\n  return api.put(url, data, config)\r\n}\r\n\r\nexport const del = (url) => {\r\n  return api.delete(url)\r\n}\r\n\r\n// 登录API\r\nexport const loginApi = (username, password) => {\r\n  return post('/api/user/login', { username, password })\r\n}\r\n\r\n// 获取用户数量\r\nexport const getUserCount = () => {\r\n  return get('/api/user/count')\r\n}\r\n// 获取用户数量\r\nexport const getVideoCount = () => {\r\n  return get('/api/video/totalCount')\r\n}\r\n// 番剧相关API\r\nexport const getAnimeStats = () => {\r\n  return get('/api/anime/stats')\r\n}\r\n\r\nexport const getAnimeList = (params) => {\r\n  return get('/api/anime/list', params)\r\n}\r\n\r\n\r\nexport const animeOff = (id) => {\r\n  return del(`/api/anime/${id}`)\r\n}\r\n\r\n// 播放统计API\r\nexport const getVisitStats = () => {\r\n  return get('/api/anime/visit/stats')\r\n}\r\n\r\n// 搜索统计API\r\nexport const getSearchStats = (params = {}) => {\r\n  return get('/api/anime/search/stats', { limit: 20, days: 7, ...params })\r\n}\r\n\r\nexport const crawlNow = (data) => {\r\n  return post('/api/crawler/crawl-now', data)\r\n}\r\n\r\nexport const crawlerAllSync = (type) => {\r\n  return post(`/api/crawler/incremental/${type}`)\r\n}\r\n\r\n// Top100 API\r\nexport const getTop100 = () => {\r\n  return get('/api/anime/top100')\r\n}\r\n\r\n// 定时任务 API\r\nexport const getTaskList = () => {\r\n  return get('/api/crawler/tasks/list')\r\n}\r\n\r\nexport const getTaskDetail = (id) => {\r\n  return get(`/api/crawler/tasks/${id}`)\r\n}\r\n\r\nexport const createTask = (data) => {\r\n  return post('/api/crawler/tasks', data)\r\n}\r\n\r\nexport const updateTask = (id, data) => {\r\n  return put(`/api/crawler/tasks/${id}`, data)\r\n}\r\n\r\nexport const deleteTaskApi = (id) => {\r\n  return del(`/api/crawler/tasks/${id}`)\r\n}\r\n\r\nexport const toggleTaskEnabled = (id, enabled) => {\r\n  return put(`/api/crawler/tasks/${id}/toggle`, null, { params: { enabled } })\r\n}\r\n\r\nexport const executeTaskApi = (id) => {\r\n  return post(`/api/crawler/tasks/${id}/execute`)\r\n}\r\n\r\nexport const cancelTaskApi = (id) => {\r\n  return post(`/api/crawler/tasks/${id}/cancel`)\r\n}\r\n\r\nexport const quickSyncApi = (type, pages) => {\r\n  return post(`/api/crawler/tasks/sync/${type}`, null, { params: { pages } })\r\n}\r\n\r\n// 任务执行记录API\r\nexport const getTaskLogs = (params) => {\r\n  return get('/api/crawler/tasks/logs', params)\r\n}\r\n\r\nexport default api\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/utils/api.js b/src/utils/api.js
+--- a/src/utils/api.js	(revision f080a09850211f95543dc5533e1f16d9f63c0429)
++++ b/src/utils/api.js	(date 1777186208042)
+@@ -1,7 +1,8 @@
+ import axios from 'axios'
++import { getBaseURL } from '@/config/api.config'
+ 
+-const API_BASE = 'https://lsj.animeparadise.vip'
+-// const API_BASE = 'http://localhost:8080'
++// const API_BASE = 'https://lsj.animeparadise.vip'
++const API_BASE = getBaseURL()
+ 
+ const api = axios.create({
+   baseURL: API_BASE,
+Index: deploy.sh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#!/bin/bash\r\n\r\n# 部署脚本：停止Docker服务 -> 拉取最新代码 -> 重新构建并启动\r\n\r\nset -e  # 遇到错误立即退出\r\n\r\necho \"=========================================\"\r\necho \"  开始部署 anime-admin\"\r\necho \"=========================================\"\r\n\r\n# 1. 停止Docker服务\r\necho \"\"\r\necho \"[1/3] 停止 Docker 服务...\"\r\ndocker compose down\r\necho \"✓ Docker 服务已停止\"\r\n\r\n# 2. 拉取最新代码\r\necho \"\"\r\necho \"[2/3] 拉取最新代码...\"\r\ngit pull origin master\r\necho \"✓ 代码已更新\"\r\n\r\n# 3. 重新构建并启动\r\necho \"\"\r\necho \"[3/3] 重新构建并启动 Docker 服务...\"\r\ndocker compose up -d --build\r\necho \"✓ Docker 服务已启动\"\r\n\r\n# 4. 查看服务状态\r\necho \"\"\r\necho \"检查服务状态...\"\r\ndocker compose ps\r\n\r\necho \"\"\r\necho \"=========================================\"\r\necho \"  ✓ 部署完成！\"\r\necho \"=========================================\"\r\necho \"\"\r\necho \"访问地址: http://$(hostname -I | awk '{print $1}')\"\r\necho \"\"\r\necho \"查看日志: docker compose logs -f\"\r\necho \"\"\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/deploy.sh b/deploy.sh
+--- a/deploy.sh	(revision f080a09850211f95543dc5533e1f16d9f63c0429)
++++ b/deploy.sh	(date 1777186531749)
+@@ -1,6 +1,6 @@
+ #!/bin/bash
+ 
+-# 部署脚本：停止Docker服务 -> 拉取最新代码 -> 重新构建并启动
++# 部署脚本：停止Docker服务 -> 拉取最新代码 -> 配置环境变量 -> 重新构建并启动
+ 
+ set -e  # 遇到错误立即退出
+ 
+@@ -10,19 +10,34 @@
+ 
+ # 1. 停止Docker服务
+ echo ""
+-echo "[1/3] 停止 Docker 服务..."
++echo "[1/4] 停止 Docker 服务..."
+ docker compose down
+ echo "✓ Docker 服务已停止"
+ 
+ # 2. 拉取最新代码
+ echo ""
+-echo "[2/3] 拉取最新代码..."
++echo "[2/4] 拉取最新代码..."
+ git pull origin master
+ echo "✓ 代码已更新"
+ 
+-# 3. 重新构建并启动
++# 3. 配置环境变量
+ echo ""
+-echo "[3/3] 重新构建并启动 Docker 服务..."
++echo "[3/4] 配置环境变量..."
++if [ ! -f .env.production ]; then
++    echo "⚠ 警告: .env.production 文件不存在，创建默认配置"
++    cat > .env.production << EOF
++# 生产环境配置
++VITE_API_BASE_URL=https://lsj.animeparadise.vip
++EOF
++    echo "✓ 已创建默认 .env.production 文件"
++else
++    echo "✓ 环境变量配置文件已存在"
++fi
++echo "当前 API 地址: $(grep VITE_API_BASE_URL .env.production | cut -d'=' -f2)"
++
++# 4. 重新构建并启动
++echo ""
++echo "[4/4] 重新构建并启动 Docker 服务..."
+ docker compose up -d --build
+ echo "✓ Docker 服务已启动"
+ 
+Index: vite.config.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import { defineConfig } from 'vite'\r\nimport vue from '@vitejs/plugin-vue'\r\nimport { resolve } from 'path'\r\n\r\nexport default defineConfig({\r\n  plugins: [vue()],\r\n  resolve: {\r\n    alias: {\r\n      '@': resolve(__dirname, 'src')\r\n    }\r\n  },\r\n  server: {\r\n    port: 3001,\r\n    open: true\r\n  }\r\n})\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/vite.config.js b/vite.config.js
+--- a/vite.config.js	(revision f080a09850211f95543dc5533e1f16d9f63c0429)
++++ b/vite.config.js	(date 1777186227674)
+@@ -1,16 +1,21 @@
+-import { defineConfig } from 'vite'
++import { defineConfig, loadEnv } from 'vite'
+ import vue from '@vitejs/plugin-vue'
+ import { resolve } from 'path'
+ 
+-export default defineConfig({
+-  plugins: [vue()],
+-  resolve: {
+-    alias: {
+-      '@': resolve(__dirname, 'src')
+-    }
+-  },
+-  server: {
+-    port: 3001,
+-    open: true
++export default defineConfig(({ mode }) => {
++  // 加载环境变量
++  const env = loadEnv(mode, process.cwd(), '')
++  
++  return {
++    plugins: [vue()],
++    resolve: {
++      alias: {
++        '@': resolve(__dirname, 'src')
++      }
++    },
++    server: {
++      port: 3001,
++      open: true
++    }
+   }
+ })
+Index: .env.development
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.env.development b/.env.development
+new file mode 100644
+--- /dev/null	(date 1777186216690)
++++ b/.env.development	(date 1777186216690)
+@@ -0,0 +1,2 @@
++# 开发环境配置
++VITE_API_BASE_URL=http://localhost:8080
+\ No newline at end of file
+Index: .env.production
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.env.production b/.env.production
+new file mode 100644
+--- /dev/null	(date 1777186220368)
++++ b/.env.production	(date 1777186220368)
+@@ -0,0 +1,2 @@
++# 生产环境配置
++VITE_API_BASE_URL=https://lsj.animeparadise.vip
+\ No newline at end of file

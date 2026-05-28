@@ -1,0 +1,178 @@
+/* ============================================
+   Element Plus 自定义主题变量
+   支持多主题动态切换
+   ============================================ */
+
+/* 默认主题（蓝色）- 已在全局样式中定义 */
+:root {
+  /* Element Plus 主色覆盖 - 使用 Apple Blue */
+  --el-color-primary: #0071e3;
+  --el-color-primary-light-3: rgba(0, 113, 227, 0.3);
+  --el-color-primary-light-5: rgba(0, 113, 227, 0.5);
+  --el-color-primary-light-7: rgba(0, 113, 227, 0.7);
+  --el-color-primary-light-8: rgba(0, 113, 227, 0.8);
+  --el-color-primary-light-9: rgba(0, 113, 227, 0.9);
+  --el-color-primary-dark-2: #005bb5;
+  
+  /* 成功色 */
+  --el-color-success: #34c759;
+  --el-color-success-light-3: rgba(52, 199, 89, 0.3);
+  
+  /* 警告色 */
+  --el-color-warning: #ff9500;
+  --el-color-warning-light-3: rgba(255, 149, 0, 0.3);
+  
+  /* 危险色 */
+  --el-color-danger: #ff3b30;
+  --el-color-danger-light-3: rgba(255, 59, 48, 0.3);
+  
+  /* 信息色 */
+  --el-color-info: #86868b;
+  --el-color-info-light-3: rgba(134, 134, 139, 0.3);
+}
+
+/* 暗色模式下的 Element Plus 变量覆盖 */
+html.dark {
+  --el-color-primary: #0a84ff;
+  --el-color-primary-light-3: rgba(10, 132, 255, 0.3);
+  --el-color-primary-light-5: rgba(10, 132, 255, 0.5);
+  --el-color-primary-light-7: rgba(10, 132, 255, 0.7);
+  --el-color-primary-light-8: rgba(10, 132, 255, 0.8);
+  --el-color-primary-light-9: rgba(10, 132, 255, 0.9);
+  --el-color-primary-dark-2: #409eff;
+  
+  --el-color-success: #30d158;
+  --el-color-success-light-3: rgba(48, 209, 88, 0.3);
+  
+  --el-color-warning: #ff9f0a;
+  --el-color-warning-light-3: rgba(255, 159, 10, 0.3);
+  
+  --el-color-danger: #ff453a;
+  --el-color-danger-light-3: rgba(255, 69, 58, 0.3);
+  
+  --el-color-info: #a1a1a6;
+  --el-color-info-light-3: rgba(161, 161, 166, 0.3);
+}
+
+/* 暗色模式下 el-tag 文字颜色修复 */
+html.dark .el-tag {
+  --el-tag-text-color: #ffffff;
+}
+
+html.dark .el-tag--primary {
+  --el-tag-text-color: #ffffff;
+  --el-tag-bg-color: var(--el-color-primary);
+  --el-tag-border-color: var(--el-color-primary);
+}
+
+html.dark .el-tag--success {
+  --el-tag-text-color: #ffffff;
+  --el-tag-bg-color: var(--el-color-success);
+  --el-tag-border-color: var(--el-color-success);
+}
+
+html.dark .el-tag--warning {
+  --el-tag-text-color: #ffffff;
+  --el-tag-bg-color: var(--el-color-warning);
+  --el-tag-border-color: var(--el-color-warning);
+}
+
+html.dark .el-tag--danger {
+  --el-tag-text-color: #ffffff;
+  --el-tag-bg-color: var(--el-color-danger);
+  --el-tag-border-color: var(--el-color-danger);
+}
+
+html.dark .el-tag--info {
+  --el-tag-text-color: #ffffff;
+  --el-tag-bg-color: var(--el-color-info);
+  --el-tag-border-color: var(--el-color-info);
+}
+
+/* 暗色模式下 el-descriptions 样式修复 */
+html.dark .el-descriptions__table {
+  --el-descriptions-item-bordered-label-background: var(--el-fill-color-light);
+}
+
+html.dark .el-descriptions__cell {
+  border-color: var(--el-border-color);
+  background-color: transparent;
+}
+
+html.dark .el-descriptions__label {
+  background-color: var(--el-fill-color-light);
+  color: var(--el-text-color-primary);
+}
+
+html.dark .el-descriptions__content {
+  background-color: transparent;
+  color: var(--el-text-color-primary);
+}
+
+/* 红色主题 */
+html.theme-red {
+  --el-color-primary: #ff3b30;
+  --el-color-primary-light-3: rgba(255, 59, 48, 0.3);
+  --el-color-primary-light-5: rgba(255, 59, 48, 0.5);
+  --el-color-primary-light-7: rgba(255, 59, 48, 0.7);
+  --el-color-primary-light-8: rgba(255, 59, 48, 0.8);
+  --el-color-primary-light-9: rgba(255, 59, 48, 0.9);
+  --el-color-primary-dark-2: #d6332a;
+}
+
+/* 暗色模式 + 红色主题 */
+html.dark.theme-red {
+  --el-color-primary: #ff453a;
+  --el-color-primary-light-3: rgba(255, 69, 58, 0.3);
+}
+
+/* 绿色主题 */
+html.theme-green {
+  --el-color-primary: #34c759;
+  --el-color-primary-light-3: rgba(52, 199, 89, 0.3);
+  --el-color-primary-light-5: rgba(52, 199, 89, 0.5);
+  --el-color-primary-light-7: rgba(52, 199, 89, 0.7);
+  --el-color-primary-light-8: rgba(52, 199, 89, 0.8);
+  --el-color-primary-light-9: rgba(52, 199, 89, 0.9);
+  --el-color-primary-dark-2: #2da84a;
+}
+
+/* 暗色模式 + 绿色主题 */
+html.dark.theme-green {
+  --el-color-primary: #30d158;
+  --el-color-primary-light-3: rgba(48, 209, 88, 0.3);
+}
+
+/* 紫色主题 */
+html.theme-purple {
+  --el-color-primary: #af52de;
+  --el-color-primary-light-3: rgba(175, 82, 222, 0.3);
+  --el-color-primary-light-5: rgba(175, 82, 222, 0.5);
+  --el-color-primary-light-7: rgba(175, 82, 222, 0.7);
+  --el-color-primary-light-8: rgba(175, 82, 222, 0.8);
+  --el-color-primary-light-9: rgba(175, 82, 222, 0.9);
+  --el-color-primary-dark-2: #8f3fbf;
+}
+
+/* 暗色模式 + 紫色主题 */
+html.dark.theme-purple {
+  --el-color-primary: #bf5af2;
+  --el-color-primary-light-3: rgba(191, 90, 242, 0.3);
+}
+
+/* 橙色主题 */
+html.theme-orange {
+  --el-color-primary: #ff9500;
+  --el-color-primary-light-3: rgba(255, 149, 0, 0.3);
+  --el-color-primary-light-5: rgba(255, 149, 0, 0.5);
+  --el-color-primary-light-7: rgba(255, 149, 0, 0.7);
+  --el-color-primary-light-8: rgba(255, 149, 0, 0.8);
+  --el-color-primary-light-9: rgba(255, 149, 0, 0.9);
+  --el-color-primary-dark-2: #d67d00;
+}
+
+/* 暗色模式 + 橙色主题 */
+html.dark.theme-orange {
+  --el-color-primary: #ff9f0a;
+  --el-color-primary-light-3: rgba(255, 159, 10, 0.3);
+}
